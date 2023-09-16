@@ -13,6 +13,9 @@ use enemigos::Enemigo;
 use laberinto::Laberinto;
 use obstaculos::Obstaculo;
 
+use std::fs::File;
+use std::io::prelude::*;
+
 trait Objeto {
     fn get_posicion(&self) -> (u32, u32);
 }
@@ -52,9 +55,30 @@ fn leer_laberinto(path: String) -> String {
     }
 }
 
+fn crear_laberinto_resultado(ruta: &str, laberinto: &Vec<Vec<&str>>) -> std::io::Result<()> {
+    // Abre el archivo en modo de escritura, creándolo si no existe o truncándolo si ya existe.
+    let mut archivo = File::create(format!("{}/salida.txt", ruta))?;
+
+    let mut fila_salida = String::new();
+    // Mensaje que quieres escribir en el archivo.
+    for fila in laberinto {
+        for casilla in fila {
+            fila_salida += casilla;
+            fila_salida += " ";
+        }
+        writeln!(archivo, "{}", fila_salida)?;
+        fila_salida.clear();
+    }
+
+    Ok(())
+}
+
 fn main() {
     let args: Vec<String> = env::args().collect();
     let path_laberinto = &args[1];
+    let path_file_salida = &args[2];
+    let coord_bomba_x = &args[3];
+    let coord_bomba_y = &args[4];
 
     let base_laberinto: String = leer_laberinto(path_laberinto.to_string());
 
@@ -76,4 +100,16 @@ fn main() {
     lab.mostrar_desvios();
     println!("OBSTACULOS:");
     lab.mostrar_obstaculos();
+
+    println!("=============================================");
+    println!(
+        "La bomba a detonar esta ubicada en ({}, {})",
+        coord_bomba_x, coord_bomba_y
+    );
+    println!("El archivo de salida se encuentra en {}", path_file_salida);
+
+    match crear_laberinto_resultado(&path_file_salida, &objetos) {
+        Ok(_) => println!("Se ha creado el archivo con éxito en {}", path_file_salida),
+        Err(err) => eprintln!("Error: {}", err),
+    }
 }

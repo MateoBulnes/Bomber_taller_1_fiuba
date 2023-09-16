@@ -13,8 +13,7 @@ pub struct Laberinto {
     enemigos: Vec<Enemigo>,
     obstaculos: Vec<Obstaculo>,
     bombas: Vec<Bomba>,
-    desvios: Vec<Desvio>,
-    //tablero: Vec<Vec<&str>>
+    desvios: Vec<Desvio>
 }
 
 impl Laberinto {
@@ -24,8 +23,7 @@ impl Laberinto {
             enemigos: ubicar_enemigos(objetos),
             obstaculos: ubicar_obstaculos(objetos),
             bombas: ubicar_bombas(objetos),
-            desvios: ubicar_desvios(objetos),
-            //tablero: objetos
+            desvios: ubicar_desvios(objetos)
         }
     }
 

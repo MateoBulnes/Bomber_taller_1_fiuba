@@ -1,11 +1,11 @@
 pub struct Obstaculo {
     pub tipo: String,
-    pub posicion_x: u32,
-    pub posicion_y: u32,
+    pub posicion_x: i32,
+    pub posicion_y: i32,
 }
 
 impl Obstaculo {
-    pub fn new(tipo_obstaculo: String, pos_x: u32, pos_y: u32) -> Self {
+    pub fn new(tipo_obstaculo: String, pos_x: i32, pos_y: i32) -> Self {
         Self {
             tipo: tipo_obstaculo,
             posicion_x: pos_x,
@@ -14,7 +14,7 @@ impl Obstaculo {
     }
 }
 
-pub fn buscar_obstaculos(objeto: &str, obstaculos: &mut Vec<Obstaculo>, pos_x: u32, pos_y: u32) {
+pub fn buscar_obstaculos(objeto: &str, obstaculos: &mut Vec<Obstaculo>, pos_x: i32, pos_y: i32) {
     match objeto {
         "W" => {
             let nuevo_obstaculo = Obstaculo::new("Pared".to_string(), pos_x, pos_y);

@@ -1,11 +1,11 @@
 pub struct Desvio {
     pub direccion: String,
-    pub posicion_x: u32,
-    pub posicion_y: u32,
+    pub posicion_x: i32,
+    pub posicion_y: i32,
 }
 
 impl Desvio {
-    pub fn new(direc_desvio: String, pos_x: u32, pos_y: u32) -> Self {
+    pub fn new(direc_desvio: String, pos_x: i32, pos_y: i32) -> Self {
         Self {
             direccion: direc_desvio,
             posicion_x: pos_x,
@@ -14,7 +14,7 @@ impl Desvio {
     }
 }
 
-pub fn buscar_desvios(objeto: &str, desvios: &mut Vec<Desvio>, pos_x: u32, pos_y: u32) {
+pub fn buscar_desvios(objeto: &str, desvios: &mut Vec<Desvio>, pos_x: i32, pos_y: i32) {
     match objeto {
         "DU" => {
             let nuevo_desvio = Desvio::new("Arriba".to_string(), pos_x, pos_y);

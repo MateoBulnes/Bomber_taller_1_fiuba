@@ -31,7 +31,20 @@ impl Laberinto {
         for bomba in &mut self.bombas {
             if bomba.posicion_x == coordenadas_bomba.0 && bomba.posicion_y == coordenadas_bomba.1 {
                 let mut casillas_afectadas = bomba.detonar(self.dimension);
-                let casillas_aux = controlar_obstaculos(&self.obstaculos, &mut casillas_afectadas);
+                let mut casillas_aux = controlar_desvios(
+                    &self.desvios,
+                    &mut casillas_afectadas,
+                    &self.dimension,
+                    &bomba,
+                );
+                //casillas_aux =
+                //    controlar_obstaculos(&self.obstaculos, &mut casillas_afectadas, &bomba.tipo);
+                casillas_aux =
+                    controlar_obstaculos(&self.obstaculos, &mut casillas_aux, &bomba.tipo);
+                imprimir_vector_tuplas(
+                    &casillas_aux,
+                    "CASILLAS FINALES CON LAS QUE SE DANIA".to_string(),
+                );
                 daniar_enemigos(&mut self.enemigos, &casillas_aux);
             }
         }
@@ -45,7 +58,7 @@ impl Laberinto {
             );
         }
     }
-    /*
+
     pub fn mostrar_bombas(&self) {
         for b in self.bombas.iter() {
             println!(
@@ -71,7 +84,7 @@ impl Laberinto {
                 o.tipo, o.posicion_x, o.posicion_y
             );
         }
-    }*/
+    }
 }
 
 pub fn ubicar_enemigos(laberinto: &Vec<Vec<&str>>) -> Vec<Enemigo> {
@@ -116,9 +129,20 @@ pub fn daniar_enemigos(enemigos: &mut Vec<Enemigo>, casillas_afectadas: &Vec<(i3
     }
 }
 
+pub fn bloquea(tipo_bomba: String, tipo_obstaculo: String) -> bool {
+    if tipo_obstaculo == "Pared" {
+        return true;
+    } else if tipo_bomba == "Normal" {
+        return true;
+    }
+    false
+}
+
 pub fn anular_casillas(
     obstaculo: (i32, i32, char),
     casillas_afectadas: &Vec<(i32, i32, char)>,
+    tipo_bomba: &String,
+    tipo_obstaculo: &String,
 ) -> Vec<(i32, i32, char)> {
     let mut casillas_anuladas: Vec<(i32, i32, char)> = Vec::new();
 
@@ -127,7 +151,8 @@ pub fn anular_casillas(
     match obstaculo.2 {
         'R' => {
             for c in casillas_afectadas {
-                if c.1 > obstaculo.1 {
+                if c.1 > obstaculo.1 && bloquea(tipo_bomba.to_string(), tipo_obstaculo.to_string())
+                {
                     casillas_anuladas.push(*c);
                 }
             }
@@ -135,7 +160,8 @@ pub fn anular_casillas(
 
         'L' => {
             for c in casillas_afectadas {
-                if c.1 < obstaculo.1 {
+                if c.1 < obstaculo.1 && bloquea(tipo_bomba.to_string(), tipo_obstaculo.to_string())
+                {
                     casillas_anuladas.push(*c);
                 }
             }
@@ -143,7 +169,8 @@ pub fn anular_casillas(
 
         'U' => {
             for c in casillas_afectadas {
-                if c.0 < obstaculo.0 {
+                if c.0 < obstaculo.0 && bloquea(tipo_bomba.to_string(), tipo_obstaculo.to_string())
+                {
                     casillas_anuladas.push(*c);
                 }
             }
@@ -151,7 +178,8 @@ pub fn anular_casillas(
 
         'D' => {
             for c in casillas_afectadas {
-                if c.0 > obstaculo.0 {
+                if c.0 > obstaculo.0 && bloquea(tipo_bomba.to_string(), tipo_obstaculo.to_string())
+                {
                     casillas_anuladas.push(*c);
                 }
             }
@@ -166,6 +194,7 @@ pub fn anular_casillas(
 pub fn controlar_obstaculos(
     obstaculos: &Vec<Obstaculo>,
     casillas_afectadas: &Vec<(i32, i32, char)>,
+    tipo_bomba: &String,
 ) -> Vec<(i32, i32, char)> {
     let mut casillas_finales = Vec::new();
     let mut casillas_anuladas: Vec<(i32, i32, char)> = Vec::new();
@@ -176,7 +205,8 @@ pub fn controlar_obstaculos(
         for casilla in casillas_afectadas {
             if obst.posicion_x == casilla.0 && obst.posicion_y == casilla.1 {
                 //encontre un obstaculo
-                let casillas_aux = anular_casillas(*casilla, &casillas_afectadas);
+                let casillas_aux =
+                    anular_casillas(*casilla, &casillas_afectadas, tipo_bomba, &obst.tipo);
                 casillas_anuladas.extend_from_slice(&casillas_aux);
                 cant_obstaculos += 1;
             }
@@ -193,6 +223,116 @@ pub fn controlar_obstaculos(
                 casillas_finales.push(*casilla);
             }
         }
+    }
+
+    casillas_finales
+}
+
+fn imprimir_vector_tuplas(vector: &Vec<(i32, i32, char)>, titulo: String) {
+    println!("CASILLAS {}", titulo);
+    println!("===============================================");
+    for (elemento1, elemento2, elemento3) in vector {
+        println!("({},{},{})", elemento1, elemento2, elemento3);
+    }
+    println!("===============================================");
+}
+
+fn verificar_agregadas(
+    afectadas: &Vec<(i32, i32, char)>,
+    finales: &Vec<(i32, i32, char)>,
+) -> Vec<(i32, i32, char)> {
+    let mut verificadas: Vec<(i32, i32, char)> = Vec::new();
+
+    //imprimir_vector_tuplas(afectadas, "AFECTADAS VERIF".to_string());
+    //imprimir_vector_tuplas(finales, "FINALES VERIF".to_string());
+
+    for f in finales {
+        if !afectadas.contains(f) {
+            verificadas.push(*f);
+        }
+    }
+
+    imprimir_vector_tuplas(&verificadas, "VERIFICADAS".to_string());
+
+    verificadas
+}
+
+fn hay_desvio_en_agregadas(desvio: &Desvio, agregadas: &Vec<(i32, i32, char)>) -> bool {
+    for a in agregadas {
+        if a.0 == desvio.posicion_x && a.1 == desvio.posicion_y {
+            return true;
+        }
+    }
+
+    false
+}
+
+fn actualizar_cant_a_recorrer(desvio: &Desvio, bomba: &Bomba, cant_a_recorrer: &i32) -> i32 {
+    let mut recorrido = 0;
+
+    if desvio.posicion_x == bomba.posicion_x {
+        recorrido = desvio.posicion_y - bomba.posicion_y;
+    } else {
+        recorrido = desvio.posicion_x - bomba.posicion_x;
+    }
+
+    cant_a_recorrer - recorrido
+}
+
+pub fn controlar_desvios(
+    desvios: &Vec<Desvio>,
+    casillas_afectadas: &Vec<(i32, i32, char)>,
+    dim: &i32,
+    bomba_det: &Bomba,
+) -> Vec<(i32, i32, char)> {
+    let mut casillas_finales: Vec<(i32, i32, char)> = Vec::new();
+    let mut casillas_agregadas: Vec<(i32, i32, char)> = Vec::new();
+    let mut casillas_anuladas: Vec<(i32, i32, char)> = Vec::new();
+    let mut desvios_no_afectados: Vec<&Desvio> = Vec::new();
+
+    let mut cant_desvios = 0;
+    let mut iter_desvios = 0;
+    let mut cant_a_recorrer = bomba_det.alcance;
+    let mut cant_cas_evaluadas = 0;
+
+    imprimir_vector_tuplas(casillas_afectadas, "AFECTADAS".to_string());
+    for desv in desvios {
+        for casilla in casillas_afectadas {
+            if (desv.posicion_x == casilla.0 && desv.posicion_y == casilla.1)
+                || (hay_desvio_en_agregadas(desv, &casillas_agregadas))
+            {
+                cant_a_recorrer = actualizar_cant_a_recorrer(&desv, &bomba_det, &cant_a_recorrer);
+
+                //encontre un desvio
+                if iter_desvios == 0 {
+                    casillas_finales = desv.desviar(
+                        &casilla.2,
+                        casillas_afectadas,
+                        dim,
+                        bomba_det,
+                        &mut cant_a_recorrer,
+                        &mut casillas_anuladas,
+                        &mut casillas_agregadas,
+                    );
+
+                    cant_desvios += 1;
+                    casillas_agregadas = verificar_agregadas(casillas_afectadas, &casillas_finales);
+                    iter_desvios = 1;
+                }
+            } else{
+                cant_cas_evaluadas += 1;
+
+                if cant_cas_evaluadas == casillas_afectadas.len(){
+                    desvios_no_afectados.push(desv);
+                }
+            }
+        }
+        iter_desvios = 0;
+        cant_cas_evaluadas = 0;
+    }
+
+    if cant_desvios == 0 {
+        return casillas_afectadas.to_vec();
     }
 
     casillas_finales

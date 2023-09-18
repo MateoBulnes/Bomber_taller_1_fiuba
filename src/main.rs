@@ -88,7 +88,7 @@ fn actualizar_laberinto<'a>(tablero: &mut Vec<Vec<&'a str>>, lab: &'a Laberinto)
         }
     }
 
-    for b in &lab.bombas{
+    for b in &lab.bombas {
         if b.detonada {
             tablero[(b.posicion_x - 1) as usize][(b.posicion_y - 1) as usize] = "_";
         }
@@ -127,6 +127,7 @@ fn main() {
     //Construyo el laberinto
     let mut lab = Laberinto::new(&tablero);
 
+    lab.mostrar_desvios();
     println!("Antes de detonar:");
     lab.mostrar_enemigos();
     lab.detonar_bomba(coordenadas_bomba);

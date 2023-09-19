@@ -1,4 +1,5 @@
-use crate::Bomba;
+#[derive(Clone)]
+#[derive(Debug, PartialEq)]
 
 pub struct Desvio {
     pub direccion: String,
@@ -20,13 +21,19 @@ impl Desvio {
         direc_rafaga: &char,
         cas_afectadas: &Vec<(i32, i32, char)>,
         dim: &i32,
+        casillas_agregadas: &mut Vec<(i32, i32, char)>,
     ) -> Vec<(i32, i32, char)> {
         let mut cas_anuladas: Vec<(i32, i32, char)> = Vec::new();
+        let mut cas_aux: Vec<(i32, i32, char)> = Vec::new();
+
+        cas_aux.extend_from_slice(&cas_afectadas);
+
+        cas_aux.extend_from_slice(casillas_agregadas);
 
         match *direc_rafaga {
             'R' => {
                 for i in (self.posicion_y + 1)..*dim + 1 {
-                    for c in cas_afectadas {
+                    for c in &cas_aux {
                         if c.0 == self.posicion_x && c.1 == i {
                             cas_anuladas.push(*c);
                         }
@@ -36,7 +43,7 @@ impl Desvio {
 
             'L' => {
                 for i in 1..self.posicion_y {
-                    for c in cas_afectadas {
+                    for c in &cas_aux {
                         if c.0 == self.posicion_x && c.1 == i {
                             cas_anuladas.push(*c);
                         }
@@ -46,7 +53,7 @@ impl Desvio {
 
             'U' => {
                 for i in 1..self.posicion_x {
-                    for c in cas_afectadas {
+                    for c in &cas_aux {
                         if c.0 == i && c.1 == self.posicion_y {
                             cas_anuladas.push(*c);
                         }
@@ -56,7 +63,7 @@ impl Desvio {
 
             'D' => {
                 for i in (self.posicion_x + 1)..*dim + 1 {
-                    for c in cas_afectadas {
+                    for c in &cas_aux {
                         if c.0 == i && c.1 == self.posicion_y {
                             cas_anuladas.push(*c);
                         }
@@ -73,7 +80,6 @@ impl Desvio {
     fn agregar_por_desvio(&self, dim: &i32, cant_a_recorrer: &mut i32) -> Vec<(i32, i32, char)> {
         let mut cas_desviadas: Vec<(i32, i32, char)> = Vec::new();
         let direc_desvio = &self.direccion;
-
 
         match &direc_desvio as &str {
             "Derecha" => {
@@ -123,29 +129,59 @@ impl Desvio {
         direc_rafaga: &char,
         cas_afectadas: &Vec<(i32, i32, char)>,
         dim: &i32,
-        bomba: &Bomba,
-        cant_a_recorrer: &mut i32,
+        cant_a_recorrer: &i32,
         casillas_anuladas: &mut Vec<(i32, i32, char)>,
         casillas_agregadas: &mut Vec<(i32, i32, char)>,
     ) -> Vec<(i32, i32, char)> {
-        //let mut cant_recorrer_aux: i32 = *cant_a_recorrer;
+        let mut nuevas_afectadas: Vec<(i32, i32, char)> = Vec::new();
+        let mut final_retorno: Vec<(i32, i32, char)> = Vec::new();
 
-        let aux = self.anuladas_por_desvio(direc_rafaga, cas_afectadas, dim);
+        let aux =self.anuladas_por_desvio(direc_rafaga, cas_afectadas, dim, casillas_agregadas);
         //Primero anulo las casillas que ya no se veran afectadas debido al desvio
         casillas_anuladas.extend_from_slice(&aux);
 
-        let mut casillas_desviadas = self.agregar_por_desvio(dim, cant_a_recorrer);
+
+        let mut cant_a_recorrer_aux = *cant_a_recorrer;
+
+        let mut casillas_desviadas = self.agregar_por_desvio(dim, &mut cant_a_recorrer_aux);
+ 
         casillas_desviadas.extend_from_slice(&casillas_agregadas);
 
+        nuevas_afectadas.extend_from_slice(&casillas_desviadas);
+        nuevas_afectadas.extend_from_slice(&cas_afectadas);
 
         //Agrego al vector con las casillas nuevas por el desvio solo las casillas que no fueron anuladas
-        for casilla in cas_afectadas {
+        for casilla in &nuevas_afectadas {
             if !casillas_anuladas.contains(casilla) {
-                casillas_desviadas.push(*casilla);
+                final_retorno.push(*casilla);
             }
         }
 
-        casillas_desviadas
+        final_retorno
+    }
+
+    pub fn get_direccion_simple(&self) -> char {
+        match &self.direccion as &str {
+            "Derecha" => {
+                return 'R';
+            }
+
+            "Izquierda" => {
+                return 'L';
+            }
+
+            "Arriba" => {
+                return 'U';
+            }
+
+            "Abajo" => {
+                return 'D';
+            }
+
+            _ => {
+                return 'X';
+            }
+        }
     }
 }
 

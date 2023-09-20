@@ -1,3 +1,5 @@
+#[derive(PartialEq, Debug)]
+
 pub struct Obstaculo {
     pub tipo: String,
     pub posicion_x: i32,

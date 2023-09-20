@@ -11,9 +11,9 @@ use crate::obstaculos::crear_obstaculos;
 pub struct Laberinto {
     dimension: i32,
     pub enemigos: Vec<Enemigo>,
-    obstaculos: Vec<Obstaculo>,
+    pub obstaculos: Vec<Obstaculo>,
     pub bombas: Vec<Bomba>,
-    desvios: Vec<Desvio>,
+    pub desvios: Vec<Desvio>,
 }
 
 impl Laberinto {
@@ -30,82 +30,99 @@ impl Laberinto {
     pub fn detonar_bomba(&mut self, coordenadas_bomba: (i32, i32)) {
         let mut desvios_ignorados: Vec<Desvio> = Vec::new();
         let mut desvios_aux: Vec<Desvio> = Vec::new();
-        let mut cant_a_recorrer = 0;
+        let mut bomba_detonada: Bomba = Bomba::new("Normal".to_string(), 0, 0, 0);
 
-        for bomba in &mut self.bombas {
+        self.bombas = ordenar_bombas(&coordenadas_bomba, &mut self.bombas);
+
+        for bomba in &self.bombas {
             if bomba.posicion_x == coordenadas_bomba.0 && bomba.posicion_y == coordenadas_bomba.1 {
-                cant_a_recorrer = bomba.alcance;
-                let mut coord_desvio_anterior = (bomba.posicion_x, bomba.posicion_y);
-                let mut casillas_afectadas = bomba.detonar(self.dimension);
-                let mut casillas_aux = controlar_desvios(
-                    &self.desvios,
-                    &mut casillas_afectadas,
-                    &self.dimension,
-                    &mut desvios_ignorados,
-                    &mut cant_a_recorrer,
-                    &mut coord_desvio_anterior,
-                );
+                bomba_detonada = bomba.clone();
+            }
+        }
 
-                
-                while desvios_ignorados.len() > 0 {
-                    desvios_aux.extend_from_slice(&desvios_ignorados);
+        if bomba_detonada.alcance > 0 {
+            actualizar_original(&bomba_detonada, &mut self.bombas);
+        }
 
-                    casillas_aux = controlar_desvios(
-                        &desvios_aux,
-                        &mut casillas_aux,
-                        &self.dimension,
-                        &mut desvios_ignorados,
-                        &mut cant_a_recorrer,
-                        &mut coord_desvio_anterior,
-                    );
-                }
+        let mut cant_a_recorrer = bomba_detonada.alcance;
+        let mut coord_desvio_anterior = (bomba_detonada.posicion_x, bomba_detonada.posicion_y);
+        let mut casillas_afectadas = bomba_detonada.detonar(self.dimension);
 
-                casillas_aux =
-                    controlar_obstaculos(&self.obstaculos, &mut casillas_aux, &bomba.tipo);
-                imprimir_vector_tuplas(
-                    &casillas_aux,
-                    "CASILLAS FINALES CON LAS QUE SE DANIA".to_string(),
-                );
-                daniar_enemigos(&mut self.enemigos, &casillas_aux);
+        let mut casillas_aux = controlar_bombas(
+            &mut self.bombas,
+            &mut casillas_afectadas,
+            &self.dimension,
+            &self.obstaculos,
+        );
+
+        casillas_aux = controlar_desvios(
+            &self.desvios,
+            &mut casillas_aux,
+            &self.dimension,
+            &mut desvios_ignorados,
+            &mut cant_a_recorrer,
+            &mut coord_desvio_anterior,
+        );
+
+        while desvios_ignorados.len() > 0 {
+            desvios_aux.extend_from_slice(&desvios_ignorados);
+            casillas_aux = controlar_desvios(
+                &desvios_aux,
+                &mut casillas_aux,
+                &self.dimension,
+                &mut desvios_ignorados,
+                &mut cant_a_recorrer,
+                &mut coord_desvio_anterior,
+            );
+        }
+
+        daniar_enemigos(&mut self.enemigos, &casillas_aux);
+    }
+}
+
+fn calcular_distancias(bombas: &Vec<Bomba>, coord: &(i32, i32)) -> Vec<f64> {
+    let mut distancias: Vec<f64> = Vec::new();
+
+    for b in bombas {
+        let dif_x = b.posicion_x - coord.0;
+        let dif_y = b.posicion_y - coord.1;
+        let dist = (((dif_x * dif_x) + (dif_y * dif_y)) as f64).sqrt();
+        distancias.push(dist);
+    }
+
+    distancias
+}
+
+fn ordenar_bombas(coord_bomba_det: &(i32, i32), bombas: &mut Vec<Bomba>) -> Vec<Bomba> {
+    let mut bombas_ordenadas: Vec<Bomba> = Vec::new();
+    let distancias = calcular_distancias(bombas, coord_bomba_det);
+    let mut indices: Vec<usize> = (0..bombas.len()).collect();
+
+    // Ordenar los índices en función de las distancias
+    for i in 0..bombas.len() {
+        for j in i + 1..bombas.len() {
+            if distancias[indices[i]] > distancias[indices[j]] {
+                // Intercambiar los índices si la distancia es mayor
+                indices.swap(i, j);
             }
         }
     }
 
-    pub fn mostrar_enemigos(&self) {
-        for e in self.enemigos.iter() {
-            println!(
-                "ENEMIGO con Vida: {}, X: {}, Y: {}",
-                e.vida, e.posicion_x, e.posicion_y
-            );
+    for &indice in &indices {
+        if indice < bombas.len() {
+            bombas_ordenadas.push(bombas[indice].clone());
         }
     }
 
-    /*pub fn mostrar_bombas(&self) {
-        for b in self.bombas.iter() {
-            println!(
-                "BOMBA con Tipo: {}, Alcance: {}, X: {}, Y: {}",
-                b.tipo, b.alcance, b.posicion_x, b.posicion_y
-            );
-        }
-    }*/
+    bombas_ordenadas
+}
 
-    pub fn mostrar_desvios(&self) {
-        for d in self.desvios.iter() {
-            println!(
-                "DESVIO con Tipo: {}, X: {}, Y: {}",
-                d.direccion, d.posicion_x, d.posicion_y
-            );
+fn actualizar_original(bomba_referencia: &Bomba, bombas: &mut Vec<Bomba>) {
+    for b in bombas {
+        if bomba_referencia == b {
+            b.detonada = true;
         }
     }
-
-    /*pub fn mostrar_obstaculos(&self) {
-        for o in self.obstaculos.iter() {
-            println!(
-                "OBSTACULO con Tipo: {}, X: {}, Y: {}",
-                o.tipo, o.posicion_x, o.posicion_y
-            );
-        }
-    }*/
 }
 
 pub fn ubicar_enemigos(laberinto: &Vec<Vec<&str>>) -> Vec<Enemigo> {
@@ -220,18 +237,6 @@ pub fn anular_casillas(
     casillas_anuladas
 }
 
-fn mostrar_vector_desvios(vector: &Vec<Desvio>, mensaje: String) {
-    println!("============================================================================================================================");
-    for d in vector.iter() {
-        println!("{}", mensaje);
-        println!(
-            "DESVIO con Tipo: {}, X: {}, Y: {}",
-            d.direccion, d.posicion_x, d.posicion_y
-        );
-    }
-    println!("============================================================================================================================");
-}
-
 pub fn controlar_obstaculos(
     obstaculos: &Vec<Obstaculo>,
     casillas_afectadas: &Vec<(i32, i32, char)>,
@@ -247,13 +252,12 @@ pub fn controlar_obstaculos(
             if obst.posicion_x == casilla.0 && obst.posicion_y == casilla.1 {
                 //encontre un obstaculo
                 let casillas_aux =
-                    anular_casillas(*casilla, &casillas_afectadas, tipo_bomba, &obst.tipo);
+                    anular_casillas(*casilla, &casillas_afectadas, &tipo_bomba, &obst.tipo);
                 casillas_anuladas.extend_from_slice(&casillas_aux);
                 cant_obstaculos += 1;
             }
         }
     }
-
     //Si no hay obstaculos devuelvo el mismo vector que me llego
     if cant_obstaculos == 0 {
         return casillas_afectadas.to_vec();
@@ -267,15 +271,6 @@ pub fn controlar_obstaculos(
     }
 
     casillas_finales
-}
-
-pub fn imprimir_vector_tuplas(vector: &Vec<(i32, i32, char)>, titulo: String) {
-    println!("CASILLAS {}", titulo);
-    println!("===============================================");
-    for (elemento1, elemento2, elemento3) in vector {
-        println!("({},{},{})", elemento1, elemento2, elemento3);
-    }
-    println!("===============================================");
 }
 
 fn verificar_agregadas(
@@ -318,7 +313,7 @@ fn actualizar_cant_a_recorrer(
         recorrido = recorrido.abs();
     }
 
-    cant_a_recorrer - recorrido
+    (cant_a_recorrer - recorrido).abs()
 }
 
 fn recorrer_casillas(
@@ -346,10 +341,9 @@ fn recorrer_casillas(
         {
             //encontre un desvio
             if *iter_desvios == 0 {
-                
                 *cant_a_recorrer =
                     actualizar_cant_a_recorrer(&desv, coord_desv_anterior, cant_a_recorrer);
-                
+
                 if desv.posicion_x == casilla.0 && desv.posicion_y == casilla.1 {
                     direc_rafaga = casilla.2;
                 } else {
@@ -400,10 +394,9 @@ pub fn controlar_desvios(
 
     let mut direc_desvio_anterior: char = 'X';
 
-
     for desv in desvios {
         let mut ignorado = false;
-    
+
         //recorrer casillas evalua al desvio actual con las casillas afectadas actualmente, y devuelve las casillas afectadas actualizadas
         *casillas_afectadas = recorrer_casillas(
             casillas_afectadas,
@@ -427,13 +420,64 @@ pub fn controlar_desvios(
         }
     }
 
-    if desvios_no_afectados.len() == 0 {desvios_ignorados.clear();} 
-    else if *desvios_ignorados != desvios_no_afectados {*desvios_ignorados = desvios_no_afectados;} 
-    else {desvios_ignorados.clear();}
-
-    /*if cant_desvios == 0 {
-        return casillas_afectadas.to_vec();
-    }*/
+    if desvios_no_afectados.len() == 0 {
+        desvios_ignorados.clear();
+    } else if *desvios_ignorados != desvios_no_afectados {
+        *desvios_ignorados = desvios_no_afectados;
+    } else {
+        desvios_ignorados.clear();
+    }
 
     casillas_afectadas.to_vec()
+}
+
+fn buscar_bombas_afectadas(
+    bomba: &mut Bomba,
+    casillas_afectadas: &Vec<(i32, i32, char)>,
+    dim: &i32,
+) -> Vec<(i32, i32, char)> {
+    let mut cas_afect_bombas: Vec<(i32, i32, char)> = Vec::new();
+    let mut cas_nueva_bomba: Vec<(i32, i32, char)> = Vec::new();
+
+    for c in casillas_afectadas {
+        if c.0 == bomba.posicion_x && c.1 == bomba.posicion_y && !bomba.detonada {
+            //Encontre una bomba en las afectadas
+            cas_nueva_bomba = bomba.detonar(*dim);
+        }
+    }
+
+    //copio las ya afectadas en el vector final
+    cas_afect_bombas.extend_from_slice(&casillas_afectadas);
+
+    //Agrego las nuevas afectadas que no esten en afectadas
+    if cas_nueva_bomba.len() > 0 {
+        for cas in cas_nueva_bomba {
+            cas_afect_bombas.push(cas);
+        }
+    }
+
+    cas_afect_bombas
+}
+
+pub fn controlar_bombas(
+    bombas: &mut Vec<Bomba>,
+    casillas_afectadas: &mut Vec<(i32, i32, char)>,
+    dimension: &i32,
+    obstaculos: &Vec<Obstaculo>,
+) -> Vec<(i32, i32, char)> {
+    let mut casillas_finales: Vec<(i32, i32, char)> = Vec::new();
+
+    let mut iteracion = 0;
+
+    for b in bombas {
+        iteracion += 1;
+        if iteracion > 1 {
+            *casillas_afectadas = buscar_bombas_afectadas(b, casillas_afectadas, dimension);
+
+            *casillas_afectadas = controlar_obstaculos(obstaculos, casillas_afectadas, &b.tipo);
+        }
+    }
+    casillas_finales.extend_from_slice(casillas_afectadas);
+
+    casillas_finales
 }

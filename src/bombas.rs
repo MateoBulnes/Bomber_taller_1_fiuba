@@ -1,9 +1,11 @@
+#[derive(Clone, PartialEq, Debug)]
+
 pub struct Bomba {
     pub tipo: String,
     pub alcance: i32,
     pub posicion_x: i32,
     pub posicion_y: i32,
-    pub detonada: bool
+    pub detonada: bool,
 }
 
 impl Bomba {
@@ -13,39 +15,39 @@ impl Bomba {
             alcance: alcance_bomba,
             posicion_x: pos_x,
             posicion_y: pos_y,
-            detonada: false
+            detonada: false,
         }
     }
     //Devuelvo un vector con las posiciones del tablero afectadas por la rafaga, donde cada posicion tiene la direccion en la que viene la rafaga
-    pub fn detonar(&mut self, dimension: i32) -> Vec<(i32, i32, char)>{
+    pub fn detonar(&mut self, dimension: i32) -> Vec<(i32, i32, char)> {
         let mut casillas_afectadas = Vec::new();
         let mut alcance_aux = self.alcance;
 
         self.detonada = true;
-        
+
         while alcance_aux > 0 {
             if alcance_aux >= dimension {
                 alcance_aux -= 1;
             } else {
                 //izq
-                if self.posicion_y - alcance_aux > 0{
-                    casillas_afectadas.push((self.posicion_x,self.posicion_y - alcance_aux, 'L'));
+                if self.posicion_y - alcance_aux > 0 {
+                    casillas_afectadas.push((self.posicion_x, self.posicion_y - alcance_aux, 'L'));
                 }
 
                 //der
                 if self.posicion_y + alcance_aux <= dimension {
-                    casillas_afectadas.push((self.posicion_x,self.posicion_y + alcance_aux, 'R'));
-                }            
+                    casillas_afectadas.push((self.posicion_x, self.posicion_y + alcance_aux, 'R'));
+                }
                 //arriba
                 if self.posicion_x - alcance_aux > 0 {
-                    casillas_afectadas.push((self.posicion_x - alcance_aux,self.posicion_y, 'U'));
+                    casillas_afectadas.push((self.posicion_x - alcance_aux, self.posicion_y, 'U'));
                 }
-            
+
                 //abajo
                 if self.posicion_x + alcance_aux <= dimension {
-                    casillas_afectadas.push((self.posicion_x + alcance_aux,self.posicion_y, 'D'));
+                    casillas_afectadas.push((self.posicion_x + alcance_aux, self.posicion_y, 'D'));
                 }
-                
+
                 alcance_aux -= 1;
             }
         }

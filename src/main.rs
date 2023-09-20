@@ -3,6 +3,7 @@ mod desvios;
 mod enemigos;
 mod laberinto;
 mod obstaculos;
+mod tests;
 
 use std::env;
 use std::fs;
@@ -55,9 +56,13 @@ fn leer_laberinto(path: String) -> String {
     }
 }
 
-fn crear_laberinto_resultado(ruta: &str, laberinto: &Vec<Vec<&str>>) -> std::io::Result<()> {
+fn crear_laberinto_resultado(
+    ruta_entrada: &str,
+    ruta_salida: &str,
+    laberinto: &Vec<Vec<&str>>,
+) -> std::io::Result<()> {
     // Abre el archivo en modo de escritura, creándolo si no existe o truncándolo si ya existe.
-    let mut archivo = File::create(format!("{}/salida.txt", ruta))?;
+    let mut archivo = File::create(format!("{}/{}", ruta_salida, ruta_entrada))?;
 
     let mut fila_salida = String::new();
     // Mensaje que quieres escribir en el archivo.
@@ -71,12 +76,6 @@ fn crear_laberinto_resultado(ruta: &str, laberinto: &Vec<Vec<&str>>) -> std::io:
     }
 
     Ok(())
-}
-
-fn convertir_coordenadas(x: &String, y: &String) -> Result<(i32, i32), std::num::ParseIntError> {
-    let x_i32 = x.parse::<i32>()?;
-    let y_i32 = y.parse::<i32>()?;
-    Ok((x_i32, y_i32))
 }
 
 fn actualizar_laberinto<'a>(tablero: &mut Vec<Vec<&'a str>>, lab: &'a Laberinto) {
@@ -95,50 +94,65 @@ fn actualizar_laberinto<'a>(tablero: &mut Vec<Vec<&'a str>>, lab: &'a Laberinto)
     }
 }
 
+fn validar_input(args: &Vec<String>) -> Result<(String, String, i32, i32), String> {
+    if args.len() < 4 {
+        return Err(format!("La cantidad de argumentos ingresados no es correcta. Ingresó {} y deben ser 4 argumentos", args.len()));
+    }
+    let coord_x = match args[3].parse::<i32>() {
+        Ok(value) => value,
+        Err(err) => {
+            return Err(format!(
+                "La coordenada X ingresada no es de tipo numérico: {}",
+                err
+            ))
+        }
+    };
+
+    let coord_y = match args[4].parse::<i32>() {
+        Ok(value) => value,
+        Err(err) => {
+            return Err(format!(
+                "La coordenada Y ingresada no es de tipo numérico: {}",
+                err
+            ))
+        }
+    };
+
+    Ok((args[1].clone(), args[2].clone(), coord_x, coord_y))
+}
+
 fn main() {
     //Leo los argumentos por linea de comandos
     let args: Vec<String> = env::args().collect();
-    let path_laberinto = &args[1];
-    let path_file_salida = &args[2];
-    let coord_bomba_x = &args[3];
-    let coord_bomba_y = &args[4];
 
-    //Convierto las coordenadas para trabajar con i32
-    //let coordenadas_bomba = convertir_coordenadas(coord_bomba_x, coord_bomba_y);
-    let mut coordenadas_bomba = (0, 0);
-    match convertir_coordenadas(coord_bomba_x, coord_bomba_y) {
-        Ok(coordenadas) => {
-            coordenadas_bomba = coordenadas;
+    match validar_input(&args) {
+        Ok((path_lab, path_salida, x, y)) => {
+            let path_laberinto = path_lab;
+            let path_file_salida = path_salida;
+            let coordenadas_bomba = (x, y);
+
+            let base_laberinto: String = leer_laberinto(path_laberinto.to_string());
+
+            let mut tablero: Vec<Vec<&str>> = Vec::new();
+            let filas: Vec<&str> = base_laberinto.split('\n').collect();
+
+            for fila in filas {
+                let fila_separada: Vec<&str> = fila.split_whitespace().collect();
+                tablero.push(fila_separada);
+            }
+            //Construyo el laberinto
+            let mut lab = Laberinto::new(&tablero);
+            lab.detonar_bomba(coordenadas_bomba);
+            actualizar_laberinto(&mut tablero, &lab);
+
+            //Creo el archivo de salida
+            match crear_laberinto_resultado(&path_laberinto, &path_file_salida, &tablero) {
+                Ok(_) => println!("Se ha creado el archivo con éxito en {}", path_file_salida),
+                Err(err) => eprintln!("Error: No se pudo crear el archivo de salida.  {}", err),
+            }
         }
         Err(e) => {
             println!("Error: {}", e);
         }
-    }
-
-    let base_laberinto: String = leer_laberinto(path_laberinto.to_string());
-
-    let mut tablero: Vec<Vec<&str>> = Vec::new();
-    let filas: Vec<&str> = base_laberinto.split('\n').collect(); //Tengo un vector donde cada elemento es una fila del laberinto
-
-    for fila in filas {
-        let fila_separada: Vec<&str> = fila.split_whitespace().collect(); //Por cada fila separo por espacios y guardo cada casilla en un vector
-        tablero.push(fila_separada); //Agrego la fila a la matriz
-    }
-    //Construyo el laberinto
-    let mut lab = Laberinto::new(&tablero);
-
-    lab.mostrar_desvios();
-    println!("Antes de detonar:");
-    lab.mostrar_enemigos();
-    lab.detonar_bomba(coordenadas_bomba);
-    println!("Despues de detonar:");
-    lab.mostrar_enemigos();
-
-    actualizar_laberinto(&mut tablero, &lab);
-
-    //Creo el archivo de salida
-    match crear_laberinto_resultado(&path_file_salida, &tablero) {
-        Ok(_) => println!("Se ha creado el archivo con éxito en {}", path_file_salida),
-        Err(err) => eprintln!("Error: {}", err),
     }
 }

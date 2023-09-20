@@ -1,5 +1,4 @@
-#[derive(Clone)]
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 
 pub struct Desvio {
     pub direccion: String,
@@ -136,15 +135,13 @@ impl Desvio {
         let mut nuevas_afectadas: Vec<(i32, i32, char)> = Vec::new();
         let mut final_retorno: Vec<(i32, i32, char)> = Vec::new();
 
-        let aux =self.anuladas_por_desvio(direc_rafaga, cas_afectadas, dim, casillas_agregadas);
+        let aux = self.anuladas_por_desvio(direc_rafaga, cas_afectadas, dim, casillas_agregadas);
         //Primero anulo las casillas que ya no se veran afectadas debido al desvio
         casillas_anuladas.extend_from_slice(&aux);
 
-
         let mut cant_a_recorrer_aux = *cant_a_recorrer;
-
         let mut casillas_desviadas = self.agregar_por_desvio(dim, &mut cant_a_recorrer_aux);
- 
+
         casillas_desviadas.extend_from_slice(&casillas_agregadas);
 
         nuevas_afectadas.extend_from_slice(&casillas_desviadas);

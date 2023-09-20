@@ -1,3 +1,5 @@
+#[derive(PartialEq, Debug)]
+
 pub struct Enemigo {
     pub vida: i32,
     pub posicion_x: i32,

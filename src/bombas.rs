@@ -25,26 +25,37 @@ impl Bomba {
 
         self.detonada = true;
 
+        println!("Alcance aux antes: {}", alcance_aux);
+        println!("Dimension: {}", dimension);
+
         while alcance_aux > 0 {
+            println!("Alcance aux dentro: {}", alcance_aux);
+            println!("Dimension dentro: {}", dimension);
             if alcance_aux >= dimension {
                 alcance_aux -= 1;
             } else {
+                println!("==================================================================");
+                println!("Agrego una casilla");
                 //izq
-                if self.posicion_y - alcance_aux > 0 {
+                if self.posicion_y - alcance_aux >= 0 {
+                    println!("izq");
                     casillas_afectadas.push((self.posicion_x, self.posicion_y - alcance_aux, 'L'));
                 }
 
                 //der
                 if self.posicion_y + alcance_aux <= dimension {
+                    println!("der");
                     casillas_afectadas.push((self.posicion_x, self.posicion_y + alcance_aux, 'R'));
                 }
                 //arriba
-                if self.posicion_x - alcance_aux > 0 {
+                if self.posicion_x - alcance_aux >= 0 {
+                    println!("arriba");
                     casillas_afectadas.push((self.posicion_x - alcance_aux, self.posicion_y, 'U'));
                 }
 
                 //abajo
                 if self.posicion_x + alcance_aux <= dimension {
+                    println!("abajo");
                     casillas_afectadas.push((self.posicion_x + alcance_aux, self.posicion_y, 'D'));
                 }
 
@@ -113,15 +124,19 @@ pub fn buscar_bombas(objeto: &str, bombas: &mut Vec<Bomba>, pos_x: i32, pos_y: i
 }
 
 pub fn crear_bombas(objetos: &Vec<Vec<&str>>, bombas: &mut Vec<Bomba>) {
-    let mut x = 1;
-    let mut y = 1;
+    let mut x = 0;
+    let mut y = 0;
 
     for fila in objetos {
         for casilla in fila {
+            println!("===================================");
+            println!("x: {}", x);
+            println!("y: {}", y);
+            println!("Objeto: {}", casilla);
             buscar_bombas(casilla, bombas, x, y);
             y += 1;
         }
         x += 1;
-        y = 1;
+        y = 0;
     }
 }

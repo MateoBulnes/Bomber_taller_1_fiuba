@@ -81,15 +81,15 @@ fn crear_laberinto_resultado(
 fn actualizar_laberinto<'a>(tablero: &mut Vec<Vec<&'a str>>, lab: &'a Laberinto) {
     for e in &lab.enemigos {
         if e.esta_vivo {
-            tablero[(e.posicion_x - 1) as usize][(e.posicion_y - 1) as usize] = e.get_vida();
+            tablero[(e.posicion_x) as usize][(e.posicion_y) as usize] = e.get_vida();
         } else {
-            tablero[(e.posicion_x - 1) as usize][(e.posicion_y - 1) as usize] = "_";
+            tablero[(e.posicion_x) as usize][(e.posicion_y) as usize] = "_";
         }
     }
 
     for b in &lab.bombas {
         if b.detonada {
-            tablero[(b.posicion_x - 1) as usize][(b.posicion_y - 1) as usize] = "_";
+            tablero[(b.posicion_x) as usize][(b.posicion_y) as usize] = "_";
         }
     }
 }

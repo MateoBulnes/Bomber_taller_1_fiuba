@@ -48,6 +48,11 @@ impl Laberinto {
         let mut coord_desvio_anterior = (bomba_detonada.posicion_x, bomba_detonada.posicion_y);
         let mut casillas_afectadas = bomba_detonada.detonar(self.dimension);
 
+        println!("CASILLAS AFECTADAS DESPUES DE DETONAR");
+        for i in &casillas_afectadas {
+            println!("({},{},{})", i.0, i.1, i.2);
+        }
+
         let mut casillas_aux = controlar_bombas(
             &mut self.bombas,
             &mut casillas_afectadas,
@@ -75,7 +80,10 @@ impl Laberinto {
                 &mut coord_desvio_anterior,
             );
         }
-
+        println!("CASILLAS AFECTADAS ANTES DE DAÑAR");
+        for i in &casillas_aux {
+            println!("({},{},{})", i.0, i.1, i.2);
+        }
         daniar_enemigos(&mut self.enemigos, &casillas_aux);
     }
 }

@@ -209,8 +209,8 @@ pub fn buscar_desvios(objeto: &str, desvios: &mut Vec<Desvio>, pos_x: i32, pos_y
 }
 
 pub fn crear_desvios(objetos: &Vec<Vec<&str>>, desvios: &mut Vec<Desvio>) {
-    let mut x = 1;
-    let mut y = 1;
+    let mut x = 0;
+    let mut y = 0;
 
     for fila in objetos {
         for casilla in fila {
@@ -218,6 +218,6 @@ pub fn crear_desvios(objetos: &Vec<Vec<&str>>, desvios: &mut Vec<Desvio>) {
             y += 1;
         }
         x += 1;
-        y = 1;
+        y = 0;
     }
 }

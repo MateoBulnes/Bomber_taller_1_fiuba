@@ -43,7 +43,7 @@ impl Bomba {
                 }
 
                 //der
-                if self.posicion_x + alcance_aux <= dimension {
+                if self.posicion_x + alcance_aux < dimension {
                     println!("der");
                     casillas_afectadas.push((self.posicion_x + alcance_aux, self.posicion_y, 'R'));
                 }
@@ -54,7 +54,7 @@ impl Bomba {
                 }
 
                 //abajo
-                if self.posicion_y + alcance_aux <= dimension {
+                if self.posicion_y + alcance_aux < dimension {
                     println!("abajo");
                     casillas_afectadas.push((self.posicion_x, self.posicion_y + alcance_aux, 'D'));
                 }

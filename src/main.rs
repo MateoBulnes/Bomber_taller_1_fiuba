@@ -81,15 +81,15 @@ fn crear_laberinto_resultado(
 fn actualizar_laberinto<'a>(tablero: &mut Vec<Vec<&'a str>>, lab: &'a Laberinto) {
     for e in &lab.enemigos {
         if e.esta_vivo {
-            tablero[(e.posicion_x) as usize][(e.posicion_y) as usize] = e.get_vida();
+            tablero[(e.posicion_y) as usize][(e.posicion_x) as usize] = e.get_vida();
         } else {
-            tablero[(e.posicion_x) as usize][(e.posicion_y) as usize] = "_";
+            tablero[(e.posicion_y) as usize][(e.posicion_x) as usize] = "_";
         }
     }
 
     for b in &lab.bombas {
         if b.detonada {
-            tablero[(b.posicion_x) as usize][(b.posicion_y) as usize] = "_";
+            tablero[(b.posicion_y) as usize][(b.posicion_x) as usize] = "_";
         }
     }
 }
@@ -140,6 +140,7 @@ fn main() {
                 let fila_separada: Vec<&str> = fila.split_whitespace().collect();
                 tablero.push(fila_separada);
             }
+
             //Construyo el laberinto
             let mut lab = Laberinto::new(&tablero);
             lab.detonar_bomba(coordenadas_bomba);

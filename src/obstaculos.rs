@@ -39,9 +39,9 @@ pub fn crear_obstaculos(objetos: &Vec<Vec<&str>>, obstaculos: &mut Vec<Obstaculo
     for fila in objetos {
         for casilla in fila {
             buscar_obstaculos(casilla, obstaculos, x, y);
-            y += 1;
+            x += 1;
         }
-        x += 1;
-        y = 0;
+        y += 1;
+        x = 0;
     }
 }

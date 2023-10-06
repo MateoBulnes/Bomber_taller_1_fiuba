@@ -37,26 +37,26 @@ impl Bomba {
                 println!("==================================================================");
                 println!("Agrego una casilla");
                 //izq
-                if self.posicion_y - alcance_aux >= 0 {
+                if self.posicion_x - alcance_aux >= 0 {
                     println!("izq");
-                    casillas_afectadas.push((self.posicion_x, self.posicion_y - alcance_aux, 'L'));
+                    casillas_afectadas.push((self.posicion_x - alcance_aux, self.posicion_y, 'L'));
                 }
 
                 //der
-                if self.posicion_y + alcance_aux <= dimension {
+                if self.posicion_x + alcance_aux <= dimension {
                     println!("der");
-                    casillas_afectadas.push((self.posicion_x, self.posicion_y + alcance_aux, 'R'));
+                    casillas_afectadas.push((self.posicion_x + alcance_aux, self.posicion_y, 'R'));
                 }
                 //arriba
-                if self.posicion_x - alcance_aux >= 0 {
+                if self.posicion_y - alcance_aux >= 0 {
                     println!("arriba");
-                    casillas_afectadas.push((self.posicion_x - alcance_aux, self.posicion_y, 'U'));
+                    casillas_afectadas.push((self.posicion_x, self.posicion_y - alcance_aux, 'U'));
                 }
 
                 //abajo
-                if self.posicion_x + alcance_aux <= dimension {
+                if self.posicion_y + alcance_aux <= dimension {
                     println!("abajo");
-                    casillas_afectadas.push((self.posicion_x + alcance_aux, self.posicion_y, 'D'));
+                    casillas_afectadas.push((self.posicion_x, self.posicion_y + alcance_aux, 'D'));
                 }
 
                 alcance_aux -= 1;
@@ -134,9 +134,9 @@ pub fn crear_bombas(objetos: &Vec<Vec<&str>>, bombas: &mut Vec<Bomba>) {
             println!("y: {}", y);
             println!("Objeto: {}", casilla);
             buscar_bombas(casilla, bombas, x, y);
-            y += 1;
+            x += 1;
         }
-        x += 1;
-        y = 0;
+        y += 1;
+        x = 0;
     }
 }

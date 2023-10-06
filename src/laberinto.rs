@@ -197,8 +197,8 @@ pub fn anular_casillas(
     match obstaculo.2 {
         'R' => {
             for c in casillas_afectadas {
-                if c.1 > obstaculo.1
-                    && c.0 == obstaculo.0
+                if c.0 > obstaculo.0
+                    && c.1 == obstaculo.1
                     && bloquea(tipo_bomba.to_string(), tipo_obstaculo.to_string())
                 {
                     casillas_anuladas.push(*c);
@@ -207,17 +207,6 @@ pub fn anular_casillas(
         }
 
         'L' => {
-            for c in casillas_afectadas {
-                if c.1 < obstaculo.1
-                    && c.0 == obstaculo.0
-                    && bloquea(tipo_bomba.to_string(), tipo_obstaculo.to_string())
-                {
-                    casillas_anuladas.push(*c);
-                }
-            }
-        }
-
-        'U' => {
             for c in casillas_afectadas {
                 if c.0 < obstaculo.0
                     && c.1 == obstaculo.1
@@ -228,10 +217,21 @@ pub fn anular_casillas(
             }
         }
 
+        'U' => {
+            for c in casillas_afectadas {
+                if c.1 < obstaculo.1
+                    && c.0 == obstaculo.0
+                    && bloquea(tipo_bomba.to_string(), tipo_obstaculo.to_string())
+                {
+                    casillas_anuladas.push(*c);
+                }
+            }
+        }
+
         'D' => {
             for c in casillas_afectadas {
-                if c.0 > obstaculo.0
-                    && c.1 == obstaculo.1
+                if c.1 > obstaculo.1
+                    && c.0 == obstaculo.0
                     && bloquea(tipo_bomba.to_string(), tipo_obstaculo.to_string())
                 {
                     casillas_anuladas.push(*c);

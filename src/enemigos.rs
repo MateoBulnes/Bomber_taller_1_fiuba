@@ -70,9 +70,9 @@ pub fn crear_enemigos(objetos: &Vec<Vec<&str>>, enemigos: &mut Vec<Enemigo>) {
     for fila in objetos {
         for casilla in fila {
             buscar_enemigos(casilla, enemigos, x, y);
-            y += 1;
+            x += 1;
         }
-        x += 1;
-        y = 0;
+        y += 1;
+        x = 0;
     }
 }

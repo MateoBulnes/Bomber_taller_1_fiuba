@@ -31,9 +31,9 @@ impl Desvio {
 
         match *direc_rafaga {
             'R' => {
-                for i in (self.posicion_y + 1)..*dim + 1 {
+                for i in (self.posicion_x + 1)..*dim + 1 {
                     for c in &cas_aux {
-                        if c.0 == self.posicion_x && c.1 == i {
+                        if c.0 == i && c.1 == self.posicion_y {
                             cas_anuladas.push(*c);
                         }
                     }
@@ -41,16 +41,6 @@ impl Desvio {
             }
 
             'L' => {
-                for i in 1..self.posicion_y {
-                    for c in &cas_aux {
-                        if c.0 == self.posicion_x && c.1 == i {
-                            cas_anuladas.push(*c);
-                        }
-                    }
-                }
-            }
-
-            'U' => {
                 for i in 1..self.posicion_x {
                     for c in &cas_aux {
                         if c.0 == i && c.1 == self.posicion_y {
@@ -60,10 +50,20 @@ impl Desvio {
                 }
             }
 
-            'D' => {
-                for i in (self.posicion_x + 1)..*dim + 1 {
+            'U' => {
+                for i in 1..self.posicion_y {
                     for c in &cas_aux {
-                        if c.0 == i && c.1 == self.posicion_y {
+                        if c.0 == self.posicion_x && c.1 == i {
+                            cas_anuladas.push(*c);
+                        }
+                    }
+                }
+            }
+
+            'D' => {
+                for i in (self.posicion_y + 1)..*dim + 1 {
+                    for c in &cas_aux {
+                        if c.0 == self.posicion_x && c.1 == i {
                             cas_anuladas.push(*c);
                         }
                     }
@@ -82,36 +82,36 @@ impl Desvio {
 
         match &direc_desvio as &str {
             "Derecha" => {
-                for i in self.posicion_y + 1..*dim + 1 {
+                for i in self.posicion_x + 1..*dim + 1 {
                     if *cant_a_recorrer > 0 {
-                        cas_desviadas.push((self.posicion_x, i, 'R'));
+                        cas_desviadas.push((i, self.posicion_y, 'R'));
                         *cant_a_recorrer -= 1;
                     }
                 }
             }
 
             "Izquierda" => {
-                for i in 1..self.posicion_y {
+                for i in 1..self.posicion_x {
                     if *cant_a_recorrer > 0 {
-                        cas_desviadas.push((self.posicion_x, self.posicion_y - i, 'L'));
+                        cas_desviadas.push((self.posicion_x - i, self.posicion_y, 'L'));
                         *cant_a_recorrer -= 1;
                     }
                 }
             }
 
             "Arriba" => {
-                for i in 1..self.posicion_x {
+                for i in 1..self.posicion_y {
                     if *cant_a_recorrer > 0 {
-                        cas_desviadas.push((self.posicion_x - i, self.posicion_y, 'U'));
+                        cas_desviadas.push((self.posicion_x, self.posicion_y - i, 'U'));
                         *cant_a_recorrer -= 1;
                     }
                 }
             }
 
             "Abajo" => {
-                for i in self.posicion_x + 1..*dim + 1 {
+                for i in self.posicion_y + 1..*dim + 1 {
                     if *cant_a_recorrer > 0 {
-                        cas_desviadas.push((i, self.posicion_y, 'D'));
+                        cas_desviadas.push((self.posicion_x, i, 'D'));
                         *cant_a_recorrer -= 1;
                     }
                 }
@@ -215,9 +215,9 @@ pub fn crear_desvios(objetos: &Vec<Vec<&str>>, desvios: &mut Vec<Desvio>) {
     for fila in objetos {
         for casilla in fila {
             buscar_desvios(casilla, desvios, x, y);
-            y += 1;
+            x += 1;
         }
-        x += 1;
-        y = 0;
+        y += 1;
+        x = 0;
     }
 }

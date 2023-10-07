@@ -3,6 +3,8 @@ mod desvios;
 mod enemigos;
 mod laberinto;
 mod obstaculos;
+
+#[cfg(test)]
 mod tests;
 
 use std::env;
@@ -121,6 +123,22 @@ fn validar_input(args: &Vec<String>) -> Result<(String, String, i32, i32), Strin
     Ok((args[1].clone(), args[2].clone(), coord_x, coord_y))
 }
 
+fn crear_archivo_error(
+    ruta_entrada: &str,
+    ruta_salida: &str,
+    mensaje_error: &str,
+) -> std::io::Result<()> {
+    let mut archivo = File::create(format!("{}/{}", ruta_salida, ruta_entrada))?;
+
+    writeln!(archivo, "ERROR: {}", mensaje_error)?;
+
+    Ok(())
+}
+
+/*verificar_dimensiones(tablero: &Vec<Vec<&str>>) {
+
+}*/
+
 fn main() {
     //Leo los argumentos por linea de comandos
     let args: Vec<String> = env::args().collect();
@@ -133,23 +151,55 @@ fn main() {
 
             let base_laberinto: String = leer_laberinto(path_laberinto.to_string());
 
-            let mut tablero: Vec<Vec<&str>> = Vec::new();
-            let filas: Vec<&str> = base_laberinto.split('\n').collect();
+            if base_laberinto.is_empty() {
+                match crear_archivo_error(
+                    &path_laberinto,
+                    &path_file_salida,
+                    "El archivo ingresado esta vacío",
+                ) {
+                    Ok(_) => println!("Se ha creado el archivo con error en {}", path_file_salida),
+                    Err(err) => eprintln!("Error: No se pudo crear el archivo de salida.  {}", err),
+                };
+            } else {
+                let mut tablero: Vec<Vec<&str>> = Vec::new();
+                let filas: Vec<&str> = base_laberinto.split('\n').collect();
+                let cant_filas = filas.len();
+                let mut error_dimension = false;
 
-            for fila in filas {
-                let fila_separada: Vec<&str> = fila.split_whitespace().collect();
-                tablero.push(fila_separada);
-            }
+                for fila in filas {
+                    let fila_separada: Vec<&str> = fila.split_whitespace().collect();
+                    if fila_separada.len() > 0 && fila_separada.len() != (cant_filas - 1) {
+                        error_dimension = true;
+                        break;
+                    }
+                    tablero.push(fila_separada);
+                }
 
-            //Construyo el laberinto
-            let mut lab = Laberinto::new(&tablero);
-            lab.detonar_bomba(coordenadas_bomba);
-            actualizar_laberinto(&mut tablero, &lab);
+                if error_dimension {
+                    match crear_archivo_error(
+                        &path_laberinto,
+                        &path_file_salida,
+                        "Las dimensiones del tablero del archivo ingresado no son correctas. La cantidad de filas y columnas debe ser la misma",
+                    ) {
+                        Ok(_) => println!("Se ha creado el archivo con error en {}", path_file_salida),
+                        Err(err) => eprintln!("Error: No se pudo crear el archivo de salida.  {}", err),
+                    };
+                } else {
+                    //Construyo el laberinto
+                    let mut lab = Laberinto::new(&tablero);
+                    lab.detonar_bomba(coordenadas_bomba);
+                    actualizar_laberinto(&mut tablero, &lab);
 
-            //Creo el archivo de salida
-            match crear_laberinto_resultado(&path_laberinto, &path_file_salida, &tablero) {
-                Ok(_) => println!("Se ha creado el archivo con éxito en {}", path_file_salida),
-                Err(err) => eprintln!("Error: No se pudo crear el archivo de salida.  {}", err),
+                    //Creo el archivo de salida
+                    match crear_laberinto_resultado(&path_laberinto, &path_file_salida, &tablero) {
+                        Ok(_) => {
+                            println!("Se ha creado el archivo con éxito en {}", path_file_salida)
+                        }
+                        Err(err) => {
+                            eprintln!("Error: No se pudo crear el archivo de salida.  {}", err)
+                        }
+                    }
+                }
             }
         }
         Err(e) => {

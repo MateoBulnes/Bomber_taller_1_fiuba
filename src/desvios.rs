@@ -91,7 +91,7 @@ impl Desvio {
             }
 
             "Izquierda" => {
-                for i in 1..self.posicion_x {
+                for i in 1..self.posicion_x + 1 {
                     if *cant_a_recorrer > 0 {
                         cas_desviadas.push((self.posicion_x - i, self.posicion_y, 'L'));
                         *cant_a_recorrer -= 1;
@@ -100,7 +100,7 @@ impl Desvio {
             }
 
             "Arriba" => {
-                for i in 1..self.posicion_y {
+                for i in 1..self.posicion_y + 1 {
                     if *cant_a_recorrer > 0 {
                         cas_desviadas.push((self.posicion_x, self.posicion_y - i, 'U'));
                         *cant_a_recorrer -= 1;

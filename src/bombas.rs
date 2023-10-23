@@ -18,7 +18,7 @@ impl Bomba {
             detonada: false,
         }
     }
-    //Devuelvo un vector con las posiciones del tablero afectadas por la rafaga, donde cada posicion tiene la direccion en la que viene la rafaga
+    
     pub fn detonar(&mut self, dimension: i32) -> Vec<(i32, i32, char)> {
         let mut casillas_afectadas = Vec::new();
         let mut alcance_aux = self.alcance;
@@ -29,21 +29,17 @@ impl Bomba {
             if alcance_aux >= dimension {
                 alcance_aux -= 1;
             } else {
-                //izq
                 if self.posicion_x - alcance_aux >= 0 {
                     casillas_afectadas.push((self.posicion_x - alcance_aux, self.posicion_y, 'L'));
                 }
 
-                //der
                 if self.posicion_x + alcance_aux < dimension {
                     casillas_afectadas.push((self.posicion_x + alcance_aux, self.posicion_y, 'R'));
                 }
-                //arriba
                 if self.posicion_y - alcance_aux >= 0 {
                     casillas_afectadas.push((self.posicion_x, self.posicion_y - alcance_aux, 'U'));
                 }
 
-                //abajo
                 if self.posicion_y + alcance_aux < dimension {
                     casillas_afectadas.push((self.posicion_x, self.posicion_y + alcance_aux, 'D'));
                 }
@@ -112,16 +108,14 @@ pub fn buscar_bombas(objeto: &str, bombas: &mut Vec<Bomba>, pos_x: i32, pos_y: i
     }
 }
 
-pub fn crear_bombas(objetos: &Vec<Vec<&str>>, bombas: &mut Vec<Bomba>) {
+pub fn crear_bombas(objetos: &[Vec<&str>], bombas: &mut Vec<Bomba>) {
     let mut x = 0;
-    let mut y = 0;
 
-    for fila in objetos {
+    for (y, fila) in objetos.iter().enumerate() {
         for casilla in fila {
-            buscar_bombas(casilla, bombas, x, y);
+            buscar_bombas(casilla, bombas, x, y as i32);
             x += 1;
         }
-        y += 1;
         x = 0;
     }
 }

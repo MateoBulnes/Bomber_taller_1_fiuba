@@ -64,7 +64,7 @@ impl Laberinto {
             &mut coord_desvio_anterior,
         );
 
-        while desvios_ignorados.len() > 0 {
+        while !desvios_ignorados.is_empty() {
             desvios_aux.extend_from_slice(&desvios_ignorados);
             casillas_aux = controlar_desvios(
                 &desvios_aux,
@@ -98,11 +98,9 @@ fn ordenar_bombas(coord_bomba_det: &(i32, i32), bombas: &mut Vec<Bomba>) -> Vec<
     let distancias = calcular_distancias(bombas, coord_bomba_det);
     let mut indices: Vec<usize> = (0..bombas.len()).collect();
 
-    // Ordenar los índices en función de las distancias
     for i in 0..bombas.len() {
         for j in i + 1..bombas.len() {
             if distancias[indices[i]] > distancias[indices[j]] {
-                // Intercambiar los índices si la distancia es mayor
                 indices.swap(i, j);
             }
         }
@@ -125,7 +123,7 @@ fn actualizar_original(bomba_referencia: &Bomba, bombas: &mut Vec<Bomba>) {
     }
 }
 
-pub fn ubicar_enemigos(laberinto: &Vec<Vec<&str>>) -> Vec<Enemigo> {
+pub fn ubicar_enemigos(laberinto: &[Vec<&str>]) -> Vec<Enemigo> {
     let mut enemigos: Vec<Enemigo> = Vec::new();
 
     crear_enemigos(laberinto, &mut enemigos);
@@ -133,7 +131,7 @@ pub fn ubicar_enemigos(laberinto: &Vec<Vec<&str>>) -> Vec<Enemigo> {
     enemigos
 }
 
-pub fn ubicar_bombas(laberinto: &Vec<Vec<&str>>) -> Vec<Bomba> {
+pub fn ubicar_bombas(laberinto: &[Vec<&str>]) -> Vec<Bomba> {
     let mut bombas: Vec<Bomba> = Vec::new();
 
     crear_bombas(laberinto, &mut bombas);
@@ -141,7 +139,7 @@ pub fn ubicar_bombas(laberinto: &Vec<Vec<&str>>) -> Vec<Bomba> {
     bombas
 }
 
-pub fn ubicar_desvios(laberinto: &Vec<Vec<&str>>) -> Vec<Desvio> {
+pub fn ubicar_desvios(laberinto: &[Vec<&str>]) -> Vec<Desvio> {
     let mut desvios: Vec<Desvio> = Vec::new();
 
     crear_desvios(laberinto, &mut desvios);
@@ -149,7 +147,7 @@ pub fn ubicar_desvios(laberinto: &Vec<Vec<&str>>) -> Vec<Desvio> {
     desvios
 }
 
-pub fn ubicar_obstaculos(laberinto: &Vec<Vec<&str>>) -> Vec<Obstaculo> {
+pub fn ubicar_obstaculos(laberinto: &[Vec<&str>]) -> Vec<Obstaculo> {
     let mut obstaculos: Vec<Obstaculo> = Vec::new();
 
     crear_obstaculos(laberinto, &mut obstaculos);
@@ -168,11 +166,10 @@ pub fn daniar_enemigos(enemigos: &mut Vec<Enemigo>, casillas_afectadas: &Vec<(i3
 }
 
 pub fn bloquea(tipo_bomba: String, tipo_obstaculo: String) -> bool {
-    if tipo_obstaculo == "Pared" {
-        return true;
-    } else if tipo_bomba == "Normal" {
+    if tipo_obstaculo == "Pared" || tipo_bomba == "Normal" {
         return true;
     }
+
     false
 }
 
@@ -246,23 +243,21 @@ pub fn controlar_obstaculos(
     let mut casillas_anuladas: Vec<(i32, i32, char)> = Vec::new();
     let mut cant_obstaculos = 0;
 
-    //Hago una primera iteracion sobre las casillas afectadas para identificar obstaculos y las casillas a anular
     for obst in obstaculos {
         for casilla in casillas_afectadas {
             if obst.posicion_x == casilla.0 && obst.posicion_y == casilla.1 {
-                //encontre un obstaculo
+                
                 let casillas_aux =
-                    anular_casillas(*casilla, &casillas_afectadas, &tipo_bomba, &obst.tipo);
+                    anular_casillas(*casilla, casillas_afectadas, tipo_bomba, &obst.tipo);
                 casillas_anuladas.extend_from_slice(&casillas_aux);
                 cant_obstaculos += 1;
             }
         }
     }
-    //Si no hay obstaculos devuelvo el mismo vector que me llego
+    
     if cant_obstaculos == 0 {
         return casillas_afectadas.to_vec();
     } else {
-        //Anulo las casillas correspondientes
         for casilla in casillas_afectadas {
             if !casillas_anuladas.contains(casilla) {
                 casillas_finales.push(*casilla);
@@ -274,7 +269,7 @@ pub fn controlar_obstaculos(
 }
 
 fn verificar_agregadas(
-    afectadas: &Vec<(i32, i32, char)>,
+    afectadas: &[(i32, i32, char)],
     finales: &Vec<(i32, i32, char)>,
 ) -> Vec<(i32, i32, char)> {
     let mut verificadas: Vec<(i32, i32, char)> = Vec::new();
@@ -319,14 +314,10 @@ fn actualizar_cant_a_recorrer(
 fn recorrer_casillas(
     casillas_afectadas: &Vec<(i32, i32, char)>,
     desv: &Desvio,
-    cant_cas_evaluadas: &mut i32,
-    cant_desvios: &mut i32,
-    iter_desvios: &mut i32,
-    cant_a_recorrer: &mut i32,
+    cantidades_aux: (&mut i32, &mut i32, &mut i32, &mut i32, &i32),
     desvios_no_afectados: &mut Vec<Desvio>,
     ignorado: &mut bool,
     coord_desv_anterior: &(i32, i32),
-    dim: &i32,
     direc_desvio_anterior: &mut char,
 ) -> Vec<(i32, i32, char)> {
     let mut casillas_finales: Vec<(i32, i32, char)> = Vec::new();
@@ -334,15 +325,14 @@ fn recorrer_casillas(
     let mut casillas_anuladas: Vec<(i32, i32, char)> = Vec::new();
 
     let mut direc_rafaga: char;
-
     for casilla in casillas_afectadas {
         if (desv.posicion_x == casilla.0 && desv.posicion_y == casilla.1)
             || (hay_desvio_en_agregadas(desv, &casillas_agregadas))
         {
-            //encontre un desvio
-            if *iter_desvios == 0 {
-                *cant_a_recorrer =
-                    actualizar_cant_a_recorrer(&desv, coord_desv_anterior, cant_a_recorrer);
+            
+            if *cantidades_aux.2 == 0 {
+                *cantidades_aux.3 =
+                    actualizar_cant_a_recorrer(desv, coord_desv_anterior, cantidades_aux.3);
 
                 if desv.posicion_x == casilla.0 && desv.posicion_y == casilla.1 {
                     direc_rafaga = casilla.2;
@@ -353,23 +343,23 @@ fn recorrer_casillas(
                 casillas_finales = desv.desviar(
                     &direc_rafaga,
                     casillas_afectadas,
-                    dim,
-                    &cant_a_recorrer,
+                    cantidades_aux.4,
+                    cantidades_aux.3,
                     &mut casillas_anuladas,
                     &mut casillas_agregadas,
                 );
 
-                *cant_desvios += 1;
+                *cantidades_aux.1 += 1;
                 casillas_agregadas = verificar_agregadas(casillas_afectadas, &casillas_finales);
-                *iter_desvios = 1;
+                *cantidades_aux.2 = 1;
             }
         } else {
-            *cant_cas_evaluadas += 1;
+            *cantidades_aux.0 += 1;
 
-            if *cant_cas_evaluadas == casillas_afectadas.len() as i32 {
+            if *cantidades_aux.0 == casillas_afectadas.len() as i32 {
                 desvios_no_afectados.push(desv.clone());
                 *ignorado = true;
-                casillas_finales.extend_from_slice(&casillas_afectadas);
+                casillas_finales.extend_from_slice(casillas_afectadas);
             }
         }
     }
@@ -385,7 +375,6 @@ pub fn controlar_desvios(
     cant_a_recorrer: &mut i32,
     coord_desv_anterior: &mut (i32, i32),
 ) -> Vec<(i32, i32, char)> {
-    //let mut casillas_finales: Vec<(i32, i32, char)> = Vec::new();
     let mut desvios_no_afectados: Vec<Desvio> = Vec::new();
 
     let mut cant_desvios = 0;
@@ -397,18 +386,20 @@ pub fn controlar_desvios(
     for desv in desvios {
         let mut ignorado = false;
 
-        //recorrer casillas evalua al desvio actual con las casillas afectadas actualmente, y devuelve las casillas afectadas actualizadas
-        *casillas_afectadas = recorrer_casillas(
-            casillas_afectadas,
-            desv,
+        let cantidades_aux: (&mut i32, &mut i32, &mut i32, &mut i32, &i32) = (
             &mut cant_cas_evaluadas,
             &mut cant_desvios,
             &mut iter_desvios,
             cant_a_recorrer,
+            dim,
+        );
+        *casillas_afectadas = recorrer_casillas(
+            casillas_afectadas,
+            desv,
+            cantidades_aux,
             &mut desvios_no_afectados,
             &mut ignorado,
-            &coord_desv_anterior,
-            dim,
+            coord_desv_anterior,
             &mut direc_desvio_anterior,
         );
 
@@ -420,7 +411,7 @@ pub fn controlar_desvios(
         }
     }
 
-    if desvios_no_afectados.len() == 0 {
+    if desvios_no_afectados.is_empty() {
         desvios_ignorados.clear();
     } else if *desvios_ignorados != desvios_no_afectados {
         *desvios_ignorados = desvios_no_afectados;
@@ -441,16 +432,13 @@ fn buscar_bombas_afectadas(
 
     for c in casillas_afectadas {
         if c.0 == bomba.posicion_x && c.1 == bomba.posicion_y && !bomba.detonada {
-            //Encontre una bomba en las afectadas
             cas_nueva_bomba = bomba.detonar(*dim);
         }
     }
 
-    //copio las ya afectadas en el vector final
-    cas_afect_bombas.extend_from_slice(&casillas_afectadas);
+    cas_afect_bombas.extend_from_slice(casillas_afectadas);
 
-    //Agrego las nuevas afectadas que no esten en afectadas
-    if cas_nueva_bomba.len() > 0 {
+    if !cas_nueva_bomba.is_empty() {
         for cas in cas_nueva_bomba {
             cas_afect_bombas.push(cas);
         }

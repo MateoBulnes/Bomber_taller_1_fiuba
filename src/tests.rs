@@ -3,8 +3,6 @@ use crate::{
     obstaculos::Obstaculo, Laberinto,
 };
 
-//TESTS LABERINTO
-
 #[test]
 fn crear_laberinto_con_bomba() {
     let tablero: Vec<Vec<&str>> = vec![
@@ -70,7 +68,6 @@ fn crear_laberinto_con_obstaculo_roca() {
     assert_eq!(lab.obstaculos, [roca]);
 }
 
-//TESTS ENEMIGOS
 
 #[test]
 fn daniar_enemigo_lo_dania() {
@@ -98,7 +95,6 @@ fn matar_enemigo_cambia_estado() {
     assert_eq!(enemigos[0].esta_vivo, false);
 }
 
-//TESTS BOMBAS
 #[test]
 fn detonar_bomba_normal() {
     let tablero: Vec<Vec<&str>> = vec![
@@ -184,7 +180,6 @@ fn detonar_bombas_en_cadena() {
     assert_eq!(lab.enemigos[22].esta_vivo, true);
 }
 
-//TESTS OBSTACULOS
 #[test]
 fn roca_con_bomba_normal_protege_enemigo() {
     let tablero: Vec<Vec<&str>> = vec![
@@ -241,7 +236,6 @@ fn pared_con_bomba_traspaso_no_protege_enemigo() {
     assert!(lab.enemigos[0].esta_vivo);
 }
 
-//TESTS DESVIOS
 #[test]
 fn desvio_arriba() {
     let tablero: Vec<Vec<&str>> = vec![

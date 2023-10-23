@@ -18,14 +18,14 @@ impl Desvio {
     fn anuladas_por_desvio(
         &self,
         direc_rafaga: &char,
-        cas_afectadas: &Vec<(i32, i32, char)>,
+        cas_afectadas: &[(i32, i32, char)],
         dim: &i32,
-        casillas_agregadas: &mut Vec<(i32, i32, char)>,
+        casillas_agregadas: &mut [(i32, i32, char)],
     ) -> Vec<(i32, i32, char)> {
         let mut cas_anuladas: Vec<(i32, i32, char)> = Vec::new();
         let mut cas_aux: Vec<(i32, i32, char)> = Vec::new();
 
-        cas_aux.extend_from_slice(&cas_afectadas);
+        cas_aux.extend_from_slice(cas_afectadas);
 
         cas_aux.extend_from_slice(casillas_agregadas);
 
@@ -80,7 +80,7 @@ impl Desvio {
         let mut cas_desviadas: Vec<(i32, i32, char)> = Vec::new();
         let direc_desvio = &self.direccion;
 
-        match &direc_desvio as &str {
+        match direc_desvio as &str {
             "Derecha" => {
                 for i in self.posicion_x + 1..*dim + 1 {
                     if *cant_a_recorrer > 0 {
@@ -126,28 +126,26 @@ impl Desvio {
     pub fn desviar(
         &self,
         direc_rafaga: &char,
-        cas_afectadas: &Vec<(i32, i32, char)>,
+        cas_afectadas: &[(i32, i32, char)],
         dim: &i32,
         cant_a_recorrer: &i32,
         casillas_anuladas: &mut Vec<(i32, i32, char)>,
-        casillas_agregadas: &mut Vec<(i32, i32, char)>,
+        casillas_agregadas: &mut [(i32, i32, char)],
     ) -> Vec<(i32, i32, char)> {
         let mut nuevas_afectadas: Vec<(i32, i32, char)> = Vec::new();
         let mut final_retorno: Vec<(i32, i32, char)> = Vec::new();
 
         let aux = self.anuladas_por_desvio(direc_rafaga, cas_afectadas, dim, casillas_agregadas);
-        //Primero anulo las casillas que ya no se veran afectadas debido al desvio
         casillas_anuladas.extend_from_slice(&aux);
 
         let mut cant_a_recorrer_aux = *cant_a_recorrer;
         let mut casillas_desviadas = self.agregar_por_desvio(dim, &mut cant_a_recorrer_aux);
 
-        casillas_desviadas.extend_from_slice(&casillas_agregadas);
+        casillas_desviadas.extend_from_slice(casillas_agregadas);
 
         nuevas_afectadas.extend_from_slice(&casillas_desviadas);
-        nuevas_afectadas.extend_from_slice(&cas_afectadas);
+        nuevas_afectadas.extend_from_slice(cas_afectadas);
 
-        //Agrego al vector con las casillas nuevas por el desvio solo las casillas que no fueron anuladas
         for casilla in &nuevas_afectadas {
             if !casillas_anuladas.contains(casilla) {
                 final_retorno.push(*casilla);
@@ -159,25 +157,15 @@ impl Desvio {
 
     pub fn get_direccion_simple(&self) -> char {
         match &self.direccion as &str {
-            "Derecha" => {
-                return 'R';
-            }
+            "Derecha" => 'R',
 
-            "Izquierda" => {
-                return 'L';
-            }
+            "Izquierda" => 'L',
 
-            "Arriba" => {
-                return 'U';
-            }
+            "Arriba" => 'U',
 
-            "Abajo" => {
-                return 'D';
-            }
+            "Abajo" => 'D',
 
-            _ => {
-                return 'X';
-            }
+            _ => 'X',
         }
     }
 }
@@ -208,16 +196,14 @@ pub fn buscar_desvios(objeto: &str, desvios: &mut Vec<Desvio>, pos_x: i32, pos_y
     }
 }
 
-pub fn crear_desvios(objetos: &Vec<Vec<&str>>, desvios: &mut Vec<Desvio>) {
+pub fn crear_desvios(objetos: &[Vec<&str>], desvios: &mut Vec<Desvio>) {
     let mut x = 0;
-    let mut y = 0;
 
-    for fila in objetos {
+    for (y, fila) in objetos.iter().enumerate() {
         for casilla in fila {
-            buscar_desvios(casilla, desvios, x, y);
+            buscar_desvios(casilla, desvios, x, y as i32);
             x += 1;
         }
-        y += 1;
         x = 0;
     }
 }

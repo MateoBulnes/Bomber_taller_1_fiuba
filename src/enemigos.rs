@@ -25,17 +25,11 @@ impl Enemigo {
 
     pub fn get_vida(&self) -> &str {
         match self.vida {
-            1 => {
-                return "F1";
-            }
+            1 => "F1",
 
-            2 => {
-                return "F2";
-            }
+            2 => "F2",
 
-            3 => {
-                return "F3";
-            }
+            3 => "F3",
 
             _ => "_",
         }
@@ -63,16 +57,14 @@ pub fn buscar_enemigos(objeto: &str, enemigos: &mut Vec<Enemigo>, pos_x: i32, po
     }
 }
 
-pub fn crear_enemigos(objetos: &Vec<Vec<&str>>, enemigos: &mut Vec<Enemigo>) {
+pub fn crear_enemigos(objetos: &[Vec<&str>], enemigos: &mut Vec<Enemigo>) {
     let mut x = 0;
-    let mut y = 0;
 
-    for fila in objetos {
+    for (y, fila) in objetos.iter().enumerate() {
         for casilla in fila {
-            buscar_enemigos(casilla, enemigos, x, y);
+            buscar_enemigos(casilla, enemigos, x, y as i32);
             x += 1;
         }
-        y += 1;
         x = 0;
     }
 }

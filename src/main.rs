@@ -25,22 +25,22 @@ trait Objeto {
 
 impl Objeto for Enemigo {
     fn get_posicion(&self) -> (i32, i32) {
-        (self.posicion_x.clone(), self.posicion_y.clone())
+        (self.posicion_x, self.posicion_y)
     }
 }
 impl Objeto for Obstaculo {
     fn get_posicion(&self) -> (i32, i32) {
-        (self.posicion_x.clone(), self.posicion_y.clone())
+        (self.posicion_x, self.posicion_y)
     }
 }
 impl Objeto for Bomba {
     fn get_posicion(&self) -> (i32, i32) {
-        (self.posicion_x.clone(), self.posicion_y.clone())
+        (self.posicion_x, self.posicion_y)
     }
 }
 impl Objeto for Desvio {
     fn get_posicion(&self) -> (i32, i32) {
-        (self.posicion_x.clone(), self.posicion_y.clone())
+        (self.posicion_x, self.posicion_y)
     }
 }
 
@@ -48,12 +48,10 @@ fn leer_laberinto(path: String) -> String {
     let leido = fs::read_to_string(path);
 
     match leido {
-        Ok(contenido) => {
-            return contenido;
-        }
+        Ok(contenido) => contenido,
         Err(e) => {
             eprintln!("Error al leer el archivo: {}", e);
-            return e.to_string();
+            e.to_string()
         }
     }
 }
@@ -63,11 +61,9 @@ fn crear_laberinto_resultado(
     ruta_salida: &str,
     laberinto: &Vec<Vec<&str>>,
 ) -> std::io::Result<()> {
-    // Abre el archivo en modo de escritura, creándolo si no existe o truncándolo si ya existe.
     let mut archivo = File::create(format!("{}/{}", ruta_salida, ruta_entrada))?;
 
     let mut fila_salida = String::new();
-    // Mensaje que quieres escribir en el archivo.
     for fila in laberinto {
         for casilla in fila {
             fila_salida += casilla;
@@ -80,7 +76,7 @@ fn crear_laberinto_resultado(
     Ok(())
 }
 
-fn actualizar_laberinto<'a>(tablero: &mut Vec<Vec<&'a str>>, lab: &'a Laberinto) {
+fn actualizar_laberinto<'a>(tablero: &mut [Vec<&'a str>], lab: &'a Laberinto) {
     for e in &lab.enemigos {
         if e.esta_vivo {
             tablero[(e.posicion_y) as usize][(e.posicion_x) as usize] = e.get_vida();
@@ -135,12 +131,7 @@ fn crear_archivo_error(
     Ok(())
 }
 
-/*verificar_dimensiones(tablero: &Vec<Vec<&str>>) {
-
-}*/
-
 fn main() {
-    //Leo los argumentos por linea de comandos
     let args: Vec<String> = env::args().collect();
 
     match validar_input(&args) {
@@ -168,7 +159,7 @@ fn main() {
 
                 for fila in filas {
                     let fila_separada: Vec<&str> = fila.split_whitespace().collect();
-                    if fila_separada.len() > 0 && fila_separada.len() != (cant_filas - 1) {
+                    if !fila_separada.is_empty() && fila_separada.len() != (cant_filas - 1) {
                         error_dimension = true;
                         break;
                     }
@@ -185,12 +176,10 @@ fn main() {
                         Err(err) => eprintln!("Error: No se pudo crear el archivo de salida.  {}", err),
                     };
                 } else {
-                    //Construyo el laberinto
                     let mut lab = Laberinto::new(&tablero);
                     lab.detonar_bomba(coordenadas_bomba);
                     actualizar_laberinto(&mut tablero, &lab);
 
-                    //Creo el archivo de salida
                     match crear_laberinto_resultado(&path_laberinto, &path_file_salida, &tablero) {
                         Ok(_) => {
                             println!("Se ha creado el archivo con éxito en {}", path_file_salida)

@@ -32,16 +32,14 @@ pub fn buscar_obstaculos(objeto: &str, obstaculos: &mut Vec<Obstaculo>, pos_x: i
     }
 }
 
-pub fn crear_obstaculos(objetos: &Vec<Vec<&str>>, obstaculos: &mut Vec<Obstaculo>) {
+pub fn crear_obstaculos(objetos: &[Vec<&str>], obstaculos: &mut Vec<Obstaculo>) {
     let mut x = 0;
-    let mut y = 0;
 
-    for fila in objetos {
+    for (y, fila) in objetos.iter().enumerate() {
         for casilla in fila {
-            buscar_obstaculos(casilla, obstaculos, x, y);
+            buscar_obstaculos(casilla, obstaculos, x, y as i32);
             x += 1;
         }
-        y += 1;
         x = 0;
     }
 }

@@ -1,7 +1,6 @@
-use crate::bombas::TipoBomba;
 use crate::{
-    bombas::Bomba, desvios::Desvio, enemigos::Enemigo, laberinto::daniar_enemigos,
-    obstaculos::Obstaculo, Laberinto,
+    bombas::Bomba, bombas::TipoBomba, desvios::Desvio, enemigos::Enemigo,
+    laberinto::daniar_enemigos, obstaculos::Obstaculo, obstaculos::TipoObstaculo, Laberinto,
 };
 
 #[test]
@@ -52,7 +51,7 @@ fn crear_laberinto_con_obstaculo_pared() {
     ];
     let lab = Laberinto::new(&tablero);
 
-    let pared = Obstaculo::new("Pared".to_string(), 0, 1);
+    let pared = Obstaculo::new(TipoObstaculo::Pared, 0, 1);
     assert_eq!(lab.obstaculos, [pared]);
 }
 
@@ -65,7 +64,7 @@ fn crear_laberinto_con_obstaculo_roca() {
     ];
     let lab = Laberinto::new(&tablero);
 
-    let roca = Obstaculo::new("Roca".to_string(), 2, 1);
+    let roca = Obstaculo::new(TipoObstaculo::Roca, 2, 1);
     assert_eq!(lab.obstaculos, [roca]);
 }
 

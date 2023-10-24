@@ -4,6 +4,7 @@ use crate::enemigos::Enemigo;
 use crate::obstaculos::Obstaculo;
 
 use crate::bombas::TipoBomba;
+use crate::obstaculos::TipoObstaculo;
 
 pub struct Laberinto {
     dimension: i32,
@@ -63,12 +64,13 @@ impl Laberinto {
                         }
                         'R' => {
                             let pos_y_aux = y as i32;
-                            let nuevo_obstaculo = Obstaculo::new("Roca".to_string(), x, pos_y_aux);
+                            let nuevo_obstaculo = Obstaculo::new(TipoObstaculo::Roca, x, pos_y_aux);
                             obstaculos_aux.push(nuevo_obstaculo);
                         }
                         'W' => {
                             let pos_y_aux = y as i32;
-                            let nuevo_obstaculo = Obstaculo::new("Pared".to_string(), x, pos_y_aux);
+                            let nuevo_obstaculo =
+                                Obstaculo::new(TipoObstaculo::Pared, x, pos_y_aux);
                             obstaculos_aux.push(nuevo_obstaculo);
                         }
                         'D' => {
@@ -218,8 +220,8 @@ pub fn daniar_enemigos(enemigos: &mut Vec<Enemigo>, casillas_afectadas: &Vec<(i3
     }
 }
 
-pub fn bloquea(tipo_bomba: TipoBomba, tipo_obstaculo: String) -> bool {
-    if tipo_obstaculo == "Pared" || tipo_bomba == TipoBomba::Normal {
+pub fn bloquea(tipo_bomba: TipoBomba, tipo_obstaculo: TipoObstaculo) -> bool {
+    if tipo_obstaculo == TipoObstaculo::Pared || tipo_bomba == TipoBomba::Normal {
         return true;
     }
 
@@ -230,7 +232,7 @@ pub fn anular_casillas(
     obstaculo: (i32, i32, char),
     casillas_afectadas: &Vec<(i32, i32, char)>,
     tipo_bomba: &TipoBomba,
-    tipo_obstaculo: &String,
+    tipo_obstaculo: &TipoObstaculo,
 ) -> Vec<(i32, i32, char)> {
     let mut casillas_anuladas: Vec<(i32, i32, char)> = Vec::new();
 
@@ -241,7 +243,7 @@ pub fn anular_casillas(
             for c in casillas_afectadas {
                 if c.0 > obstaculo.0
                     && c.1 == obstaculo.1
-                    && bloquea(tipo_bomba.clone(), tipo_obstaculo.to_string())
+                    && bloquea(tipo_bomba.clone(), tipo_obstaculo.clone())
                 {
                     casillas_anuladas.push(*c);
                 }
@@ -252,7 +254,7 @@ pub fn anular_casillas(
             for c in casillas_afectadas {
                 if c.0 < obstaculo.0
                     && c.1 == obstaculo.1
-                    && bloquea(tipo_bomba.clone(), tipo_obstaculo.to_string())
+                    && bloquea(tipo_bomba.clone(), tipo_obstaculo.clone())
                 {
                     casillas_anuladas.push(*c);
                 }
@@ -263,7 +265,7 @@ pub fn anular_casillas(
             for c in casillas_afectadas {
                 if c.1 < obstaculo.1
                     && c.0 == obstaculo.0
-                    && bloquea(tipo_bomba.clone(), tipo_obstaculo.to_string())
+                    && bloquea(tipo_bomba.clone(), tipo_obstaculo.clone())
                 {
                     casillas_anuladas.push(*c);
                 }
@@ -274,7 +276,7 @@ pub fn anular_casillas(
             for c in casillas_afectadas {
                 if c.1 > obstaculo.1
                     && c.0 == obstaculo.0
-                    && bloquea(tipo_bomba.clone(), tipo_obstaculo.to_string())
+                    && bloquea(tipo_bomba.clone(), tipo_obstaculo.clone())
                 {
                     casillas_anuladas.push(*c);
                 }

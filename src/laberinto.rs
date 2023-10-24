@@ -26,74 +26,15 @@ impl Laberinto {
 
         for (y, fila) in objetos.iter().enumerate() {
             for casilla in fila {
-                if let Some(tipo_objeto) = casilla.chars().next() {
-                    match tipo_objeto {
-                        'F' => {
-                            if let Some(vida_enemigo) = casilla.chars().nth(1) {
-                                let pos_y_aux = y as i32;
-                                let nuevo_enemigo = Enemigo::new(
-                                    Self::convertir_caracter(&vida_enemigo),
-                                    x,
-                                    pos_y_aux,
-                                );
-                                enemigos_aux.push(nuevo_enemigo);
-                            }
-                        }
-                        'B' => {
-                            if let Some(alcance_bomba) = casilla.chars().nth(1) {
-                                let pos_y_aux = y as i32;
-                                let nueva_bomba = Bomba::new(
-                                    TipoBomba::Normal,
-                                    Self::convertir_caracter(&alcance_bomba),
-                                    x,
-                                    pos_y_aux,
-                                );
-                                bombas_aux.push(nueva_bomba);
-                            }
-                        }
-                        'S' => {
-                            if let Some(alcance_bomba) = casilla.chars().nth(1) {
-                                let pos_y_aux = y as i32;
-                                let nueva_bomba = Bomba::new(
-                                    TipoBomba::Traspaso,
-                                    Self::convertir_caracter(&alcance_bomba),
-                                    x,
-                                    pos_y_aux,
-                                );
-                                bombas_aux.push(nueva_bomba);
-                            }
-                        }
-                        'R' => {
-                            let pos_y_aux = y as i32;
-                            let nuevo_obstaculo = Obstaculo::new(TipoObstaculo::Roca, x, pos_y_aux);
-                            obstaculos_aux.push(nuevo_obstaculo);
-                        }
-                        'W' => {
-                            let pos_y_aux = y as i32;
-                            let nuevo_obstaculo =
-                                Obstaculo::new(TipoObstaculo::Pared, x, pos_y_aux);
-                            obstaculos_aux.push(nuevo_obstaculo);
-                        }
-                        'D' => {
-                            if let Some(direc_desvio) = casilla.chars().nth(1) {
-                                let pos_y_aux = y as i32;
-
-                                let direc_aux = match direc_desvio {
-                                    'U' => DireccionDesvio::Arriba,
-                                    'D' => DireccionDesvio::Abajo,
-                                    'L' => DireccionDesvio::Izquierda,
-                                    'R' => DireccionDesvio::Derecha,
-                                    _ => DireccionDesvio::Invalida,
-                                };
-
-                                let nuevo_desvio = Desvio::new(direc_aux, x, pos_y_aux);
-                                desvios_aux.push(nuevo_desvio);
-                            }
-                        }
-                        _ => {}
-                    }
-                }
-
+                Self::evaluar_objeto(
+                    casilla,
+                    &mut enemigos_aux,
+                    &mut desvios_aux,
+                    &mut obstaculos_aux,
+                    &mut bombas_aux,
+                    (x, y as i32),
+                );
+                
                 x += 1;
             }
             x = 0;
@@ -112,6 +53,72 @@ impl Laberinto {
         match caracter.to_digit(10) {
             Some(num) => num as i32,
             None => -1,
+        }
+    }
+
+    fn evaluar_objeto(
+        casilla: &&str,
+        enemigos_aux: &mut Vec<Enemigo>,
+        desvios_aux: &mut Vec<Desvio>,
+        obstaculos_aux: &mut Vec<Obstaculo>,
+        bombas_aux: &mut Vec<Bomba>,
+        coord: (i32, i32),
+    ) {
+        if let Some(tipo_objeto) = casilla.chars().next() {
+            match tipo_objeto {
+                'F' => {
+                    if let Some(vida_enemigo) = casilla.chars().nth(1) {
+                        let nuevo_enemigo =
+                            Enemigo::new(Self::convertir_caracter(&vida_enemigo), coord.0, coord.1);
+                        enemigos_aux.push(nuevo_enemigo);
+                    }
+                }
+                'B' => {
+                    if let Some(alcance_bomba) = casilla.chars().nth(1) {
+                        let nueva_bomba = Bomba::new(
+                            TipoBomba::Normal,
+                            Self::convertir_caracter(&alcance_bomba),
+                            coord.0,
+                            coord.1,
+                        );
+                        bombas_aux.push(nueva_bomba);
+                    }
+                }
+                'S' => {
+                    if let Some(alcance_bomba) = casilla.chars().nth(1) {
+                        let nueva_bomba = Bomba::new(
+                            TipoBomba::Traspaso,
+                            Self::convertir_caracter(&alcance_bomba),
+                            coord.0,
+                            coord.1,
+                        );
+                        bombas_aux.push(nueva_bomba);
+                    }
+                }
+                'R' => {
+                    let nuevo_obstaculo = Obstaculo::new(TipoObstaculo::Roca, coord.0, coord.1);
+                    obstaculos_aux.push(nuevo_obstaculo);
+                }
+                'W' => {
+                    let nuevo_obstaculo = Obstaculo::new(TipoObstaculo::Pared, coord.0, coord.1);
+                    obstaculos_aux.push(nuevo_obstaculo);
+                }
+                'D' => {
+                    if let Some(direc_desvio) = casilla.chars().nth(1) {
+                        let direc_aux = match direc_desvio {
+                            'U' => DireccionDesvio::Arriba,
+                            'D' => DireccionDesvio::Abajo,
+                            'L' => DireccionDesvio::Izquierda,
+                            'R' => DireccionDesvio::Derecha,
+                            _ => DireccionDesvio::Invalida,
+                        };
+
+                        let nuevo_desvio = Desvio::new(direc_aux, coord.0, coord.1);
+                        desvios_aux.push(nuevo_desvio);
+                    }
+                }
+                _ => {}
+            }
         }
     }
 

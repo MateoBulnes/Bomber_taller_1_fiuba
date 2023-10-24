@@ -35,36 +35,3 @@ impl Enemigo {
         }
     }
 }
-
-pub fn buscar_enemigos(objeto: &str, enemigos: &mut Vec<Enemigo>, pos_x: i32, pos_y: i32) {
-    match objeto {
-        "F1" => {
-            let nuevo_enemigo = Enemigo::new(1, pos_x, pos_y);
-            enemigos.push(nuevo_enemigo);
-        }
-
-        "F2" => {
-            let nuevo_enemigo = Enemigo::new(2, pos_x, pos_y);
-            enemigos.push(nuevo_enemigo);
-        }
-
-        "F3" => {
-            let nuevo_enemigo = Enemigo::new(3, pos_x, pos_y);
-            enemigos.push(nuevo_enemigo);
-        }
-
-        _ => {}
-    }
-}
-
-pub fn crear_enemigos(objetos: &[Vec<&str>], enemigos: &mut Vec<Enemigo>) {
-    let mut x = 0;
-
-    for (y, fila) in objetos.iter().enumerate() {
-        for casilla in fila {
-            buscar_enemigos(casilla, enemigos, x, y as i32);
-            x += 1;
-        }
-        x = 0;
-    }
-}

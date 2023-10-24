@@ -3,11 +3,6 @@ use crate::desvios::Desvio;
 use crate::enemigos::Enemigo;
 use crate::obstaculos::Obstaculo;
 
-use crate::bombas::crear_bombas;
-use crate::desvios::crear_desvios;
-use crate::enemigos::crear_enemigos;
-use crate::obstaculos::crear_obstaculos;
-
 pub struct Laberinto {
     dimension: i32,
     pub enemigos: Vec<Enemigo>,
@@ -18,14 +13,172 @@ pub struct Laberinto {
 
 impl Laberinto {
     pub fn new(objetos: &Vec<Vec<&str>>) -> Self {
+        let mut enemigos_aux: Vec<Enemigo> = Vec::new();
+        let mut obstaculos_aux: Vec<Obstaculo> = Vec::new();
+        let mut desvios_aux: Vec<Desvio> = Vec::new();
+        let mut bombas_aux: Vec<Bomba> = Vec::new();
+
+        let mut x = 0;
+
+        for (y, fila) in objetos.iter().enumerate() {
+            for casilla in fila {    
+                if let Some(tipo_objeto) = casilla.chars().next() {
+                    match tipo_objeto {
+                        'F' => {
+                            if let Some(vida_enemigo) = casilla.chars().nth(1) {
+                                let pos_y_aux = y as i32;
+                                let nuevo_enemigo = Enemigo::new(
+                                    Self::convertir_caracter(&vida_enemigo),
+                                    x,
+                                    pos_y_aux,
+                                );
+                                enemigos_aux.push(nuevo_enemigo);
+                            }
+                        }
+                        'B' => {
+                            if let Some(alcance_bomba) = casilla.chars().nth(1) {
+                                let pos_y_aux = y as i32;
+                                let nueva_bomba = Bomba::new(
+                                    "Normal".to_string(),
+                                    Self::convertir_caracter(&alcance_bomba),
+                                    x,
+                                    pos_y_aux,
+                                );
+                                bombas_aux.push(nueva_bomba);
+                            }
+                        }
+                        'S' => {
+                            if let Some(alcance_bomba) = casilla.chars().nth(1) {
+                                let pos_y_aux = y as i32;
+                                let nueva_bomba = Bomba::new(
+                                    "Traspaso".to_string(),
+                                    Self::convertir_caracter(&alcance_bomba),
+                                    x,
+                                    pos_y_aux,
+                                );
+                                bombas_aux.push(nueva_bomba);
+                            }
+                        }
+                        'R' => {
+                            let pos_y_aux = y as i32;
+                            let nuevo_obstaculo = Obstaculo::new("Roca".to_string(), x, pos_y_aux);
+                            obstaculos_aux.push(nuevo_obstaculo);
+                        }
+                        'W' => {
+                            let pos_y_aux = y as i32;
+                            let nuevo_obstaculo = Obstaculo::new("Pared".to_string(), x, pos_y_aux);
+                            obstaculos_aux.push(nuevo_obstaculo);
+                        }
+                        'D' => {
+                            if let Some(direc_desvio) = casilla.chars().nth(1) {
+                                let pos_y_aux = y as i32;
+
+                                let direc_aux = match direc_desvio {
+                                    'U' => "Arriba",
+                                    'D' => "Abajo",
+                                    'L' => "Izquierda",
+                                    'R' => "Derecha",
+                                    _ => "",
+                                };
+
+                                let nuevo_desvio = Desvio::new(direc_aux.to_string(), x, pos_y_aux);
+                                desvios_aux.push(nuevo_desvio);
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+
+                x += 1;
+            }
+            x = 0;
+        }
+
         Self {
             dimension: objetos.len() as i32,
-            enemigos: ubicar_enemigos(objetos),
-            obstaculos: ubicar_obstaculos(objetos),
-            bombas: ubicar_bombas(objetos),
-            desvios: ubicar_desvios(objetos),
+            enemigos: enemigos_aux,
+            obstaculos: obstaculos_aux,
+            desvios: desvios_aux,
+            bombas: bombas_aux,
         }
     }
+
+    fn convertir_caracter(caracter: &char) -> i32 {
+        match caracter.to_digit(10) {
+            Some(num) => num as i32,
+            None => -1,
+        }
+    }
+
+    /*fn evaluar_objeto(casilla: &&str, y:usize, x:i32) -> Result<(), String>{
+        match casilla.chars().next() {
+            Some(tipo_objeto) => match tipo_objeto {
+                'F' => {
+                    if let Some(vida_enemigo) = casilla.chars().nth(1) {
+                        let pos_y_aux = y as i32;
+                        let nuevo_enemigo = Enemigo::new(
+                            Self::convertir_caracter(&vida_enemigo),
+                            x,
+                            pos_y_aux,
+                        );
+                        enemigos_aux.push(nuevo_enemigo);
+                    }
+                }
+                'B' => {
+                    if let Some(alcance_bomba) = casilla.chars().nth(1) {
+                        let pos_y_aux = y as i32;
+                        let nueva_bomba = Bomba::new(
+                            "Normal".to_string(),
+                            Self::convertir_caracter(&alcance_bomba),
+                            x,
+                            pos_y_aux,
+                        );
+                        bombas_aux.push(nueva_bomba);
+                    }
+                }
+                'S' => {
+                    if let Some(alcance_bomba) = casilla.chars().nth(1) {
+                        let pos_y_aux = y as i32;
+                        let nueva_bomba = Bomba::new(
+                            "Traspaso".to_string(),
+                            Self::convertir_caracter(&alcance_bomba),
+                            x,
+                            pos_y_aux,
+                        );
+                        bombas_aux.push(nueva_bomba);
+                    }
+                }
+                'R' => {
+                    let pos_y_aux = y as i32;
+                    let nuevo_obstaculo = Obstaculo::new("Roca".to_string(), x, pos_y_aux);
+                    obstaculos_aux.push(nuevo_obstaculo);
+                }
+                'W' => {
+                    let pos_y_aux = y as i32;
+                    let nuevo_obstaculo = Obstaculo::new("Pared".to_string(), x, pos_y_aux);
+                    obstaculos_aux.push(nuevo_obstaculo);
+                }
+                'D' => {
+                    if let Some(direc_desvio) = casilla.chars().nth(1) {
+                        let pos_y_aux = y as i32;
+
+                        let direc_aux = match direc_desvio {
+                            'U' => "Arriba",
+                            'D' => "Abajo",
+                            'L' => "Izquierda",
+                            'R' => "Derecha",
+                            _ => "",
+                        };
+
+                        let nuevo_desvio = Desvio::new(direc_aux.to_string(), x, pos_y_aux);
+                        desvios_aux.push(nuevo_desvio);
+                    }
+                }
+                _ => {}
+            },
+            None => {}
+        }
+    }*/
 
     pub fn detonar_bomba(&mut self, coordenadas_bomba: (i32, i32)) {
         let mut desvios_ignorados: Vec<Desvio> = Vec::new();
@@ -123,38 +276,6 @@ fn actualizar_original(bomba_referencia: &Bomba, bombas: &mut Vec<Bomba>) {
     }
 }
 
-pub fn ubicar_enemigos(laberinto: &[Vec<&str>]) -> Vec<Enemigo> {
-    let mut enemigos: Vec<Enemigo> = Vec::new();
-
-    crear_enemigos(laberinto, &mut enemigos);
-
-    enemigos
-}
-
-pub fn ubicar_bombas(laberinto: &[Vec<&str>]) -> Vec<Bomba> {
-    let mut bombas: Vec<Bomba> = Vec::new();
-
-    crear_bombas(laberinto, &mut bombas);
-
-    bombas
-}
-
-pub fn ubicar_desvios(laberinto: &[Vec<&str>]) -> Vec<Desvio> {
-    let mut desvios: Vec<Desvio> = Vec::new();
-
-    crear_desvios(laberinto, &mut desvios);
-
-    desvios
-}
-
-pub fn ubicar_obstaculos(laberinto: &[Vec<&str>]) -> Vec<Obstaculo> {
-    let mut obstaculos: Vec<Obstaculo> = Vec::new();
-
-    crear_obstaculos(laberinto, &mut obstaculos);
-
-    obstaculos
-}
-
 pub fn daniar_enemigos(enemigos: &mut Vec<Enemigo>, casillas_afectadas: &Vec<(i32, i32, char)>) {
     for enemigo in enemigos {
         for casilla in casillas_afectadas {
@@ -246,7 +367,6 @@ pub fn controlar_obstaculos(
     for obst in obstaculos {
         for casilla in casillas_afectadas {
             if obst.posicion_x == casilla.0 && obst.posicion_y == casilla.1 {
-                
                 let casillas_aux =
                     anular_casillas(*casilla, casillas_afectadas, tipo_bomba, &obst.tipo);
                 casillas_anuladas.extend_from_slice(&casillas_aux);
@@ -254,7 +374,7 @@ pub fn controlar_obstaculos(
             }
         }
     }
-    
+
     if cant_obstaculos == 0 {
         return casillas_afectadas.to_vec();
     } else {
@@ -329,7 +449,6 @@ fn recorrer_casillas(
         if (desv.posicion_x == casilla.0 && desv.posicion_y == casilla.1)
             || (hay_desvio_en_agregadas(desv, &casillas_agregadas))
         {
-            
             if *cantidades_aux.2 == 0 {
                 *cantidades_aux.3 =
                     actualizar_cant_a_recorrer(desv, coord_desv_anterior, cantidades_aux.3);

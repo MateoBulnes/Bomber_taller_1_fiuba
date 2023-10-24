@@ -170,40 +170,4 @@ impl Desvio {
     }
 }
 
-pub fn buscar_desvios(objeto: &str, desvios: &mut Vec<Desvio>, pos_x: i32, pos_y: i32) {
-    match objeto {
-        "DU" => {
-            let nuevo_desvio = Desvio::new("Arriba".to_string(), pos_x, pos_y);
-            desvios.push(nuevo_desvio);
-        }
 
-        "DD" => {
-            let nuevo_desvio = Desvio::new("Abajo".to_string(), pos_x, pos_y);
-            desvios.push(nuevo_desvio);
-        }
-
-        "DL" => {
-            let nuevo_desvio = Desvio::new("Izquierda".to_string(), pos_x, pos_y);
-            desvios.push(nuevo_desvio);
-        }
-
-        "DR" => {
-            let nuevo_desvio = Desvio::new("Derecha".to_string(), pos_x, pos_y);
-            desvios.push(nuevo_desvio);
-        }
-
-        _ => {}
-    }
-}
-
-pub fn crear_desvios(objetos: &[Vec<&str>], desvios: &mut Vec<Desvio>) {
-    let mut x = 0;
-
-    for (y, fila) in objetos.iter().enumerate() {
-        for casilla in fila {
-            buscar_desvios(casilla, desvios, x, y as i32);
-            x += 1;
-        }
-        x = 0;
-    }
-}

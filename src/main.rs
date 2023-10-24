@@ -56,11 +56,35 @@ fn leer_laberinto(path: String) -> String {
     }
 }
 
+fn formatear_ruta_salida(ruta: &str) -> String {
+    let mut ruta = ruta.trim_end_matches('/');
+    ruta = ruta.trim_end_matches('/');
+    format!("./{ruta}/")
+}
+
+fn crear_directorio_salida(ruta: &str) -> Result<(), String> {
+    if std::path::Path::new(ruta).exists() {
+        return Ok(());
+    }
+
+    match std::fs::create_dir_all(ruta.clone()) {
+        Ok(_) => Ok(()),
+        Err(_) => Err("Error creando el directorio".into()),
+    }
+}
+
 fn crear_laberinto_resultado(
     ruta_entrada: &str,
     ruta_salida: &str,
     laberinto: &Vec<Vec<&str>>,
 ) -> std::io::Result<()> {
+    let path_dir = formatear_ruta_salida(ruta_salida);
+
+    match crear_directorio_salida(&path_dir) {
+        Ok(_) => (),
+        Err(_) => println!("Error creando el directorio"),
+    }
+
     let mut archivo = File::create(format!("{}/{}", ruta_salida, ruta_entrada))?;
 
     let mut fila_salida = String::new();
@@ -69,7 +93,9 @@ fn crear_laberinto_resultado(
             fila_salida += casilla;
             fila_salida += " ";
         }
-        writeln!(archivo, "{}", fila_salida)?;
+        if !fila.is_empty() {
+            writeln!(archivo, "{}", fila_salida)?;
+        }
         fila_salida.clear();
     }
 
@@ -124,11 +150,29 @@ fn crear_archivo_error(
     ruta_salida: &str,
     mensaje_error: &str,
 ) -> std::io::Result<()> {
+    let path_dir = formatear_ruta_salida(ruta_salida);
+
+    match crear_directorio_salida(&path_dir) {
+        Ok(_) => (),
+        Err(_) => println!("Error creando el directorio"),
+    }
     let mut archivo = File::create(format!("{}/{}", ruta_salida, ruta_entrada))?;
 
     writeln!(archivo, "ERROR: {}", mensaje_error)?;
 
     Ok(())
+}
+
+fn contar_filas(filas: &Vec<&str>) -> usize {
+    let mut cant_filas = 0;
+
+    for f in filas {
+        if !f.is_empty() {
+            cant_filas += 1;
+        }
+    }
+
+    cant_filas
 }
 
 fn main() {
@@ -148,18 +192,20 @@ fn main() {
                     &path_file_salida,
                     "El archivo ingresado esta vacío",
                 ) {
-                    Ok(_) => println!("Se ha creado el archivo con error en {}", path_file_salida),
-                    Err(err) => eprintln!("Error: No se pudo crear el archivo de salida.  {}", err),
+                    Ok(_) => (),
+                    Err(err) => {
+                        eprintln!("Error: No se pudo crear el archivo de salida.  {}", err)
+                    }
                 };
             } else {
                 let mut tablero: Vec<Vec<&str>> = Vec::new();
                 let filas: Vec<&str> = base_laberinto.split('\n').collect();
-                let cant_filas = filas.len();
+                let cant_filas = contar_filas(&filas);
                 let mut error_dimension = false;
 
                 for fila in filas {
                     let fila_separada: Vec<&str> = fila.split_whitespace().collect();
-                    if !fila_separada.is_empty() && fila_separada.len() != (cant_filas - 1) {
+                    if !fila_separada.is_empty() && fila_separada.len() != (cant_filas) {
                         error_dimension = true;
                         break;
                     }
@@ -172,7 +218,7 @@ fn main() {
                         &path_file_salida,
                         "Las dimensiones del tablero del archivo ingresado no son correctas. La cantidad de filas y columnas debe ser la misma",
                     ) {
-                        Ok(_) => println!("Se ha creado el archivo con error en {}", path_file_salida),
+                        Ok(_) => (),
                         Err(err) => eprintln!("Error: No se pudo crear el archivo de salida.  {}", err),
                     };
                 } else {
@@ -181,9 +227,7 @@ fn main() {
                     actualizar_laberinto(&mut tablero, &lab);
 
                     match crear_laberinto_resultado(&path_laberinto, &path_file_salida, &tablero) {
-                        Ok(_) => {
-                            println!("Se ha creado el archivo con éxito en {}", path_file_salida)
-                        }
+                        Ok(_) => (),
                         Err(err) => {
                             eprintln!("Error: No se pudo crear el archivo de salida.  {}", err)
                         }

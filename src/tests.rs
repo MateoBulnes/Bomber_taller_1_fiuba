@@ -1,3 +1,4 @@
+use crate::bombas::TipoBomba;
 use crate::{
     bombas::Bomba, desvios::Desvio, enemigos::Enemigo, laberinto::daniar_enemigos,
     obstaculos::Obstaculo, Laberinto,
@@ -12,7 +13,7 @@ fn crear_laberinto_con_bomba() {
     ];
     let lab = Laberinto::new(&tablero);
 
-    let bomba = Bomba::new("Normal".to_string(), 1, 1, 0);
+    let bomba = Bomba::new(TipoBomba::Normal, 1, 1, 0);
     assert_eq!(lab.bombas, [bomba]);
 }
 
@@ -67,7 +68,6 @@ fn crear_laberinto_con_obstaculo_roca() {
     let roca = Obstaculo::new("Roca".to_string(), 2, 1);
     assert_eq!(lab.obstaculos, [roca]);
 }
-
 
 #[test]
 fn daniar_enemigo_lo_dania() {

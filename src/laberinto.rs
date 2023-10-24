@@ -3,6 +3,8 @@ use crate::desvios::Desvio;
 use crate::enemigos::Enemigo;
 use crate::obstaculos::Obstaculo;
 
+use crate::bombas::TipoBomba;
+
 pub struct Laberinto {
     dimension: i32,
     pub enemigos: Vec<Enemigo>,
@@ -21,7 +23,7 @@ impl Laberinto {
         let mut x = 0;
 
         for (y, fila) in objetos.iter().enumerate() {
-            for casilla in fila {    
+            for casilla in fila {
                 if let Some(tipo_objeto) = casilla.chars().next() {
                     match tipo_objeto {
                         'F' => {
@@ -39,7 +41,7 @@ impl Laberinto {
                             if let Some(alcance_bomba) = casilla.chars().nth(1) {
                                 let pos_y_aux = y as i32;
                                 let nueva_bomba = Bomba::new(
-                                    "Normal".to_string(),
+                                    TipoBomba::Normal,
                                     Self::convertir_caracter(&alcance_bomba),
                                     x,
                                     pos_y_aux,
@@ -51,7 +53,7 @@ impl Laberinto {
                             if let Some(alcance_bomba) = casilla.chars().nth(1) {
                                 let pos_y_aux = y as i32;
                                 let nueva_bomba = Bomba::new(
-                                    "Traspaso".to_string(),
+                                    TipoBomba::Traspaso,
                                     Self::convertir_caracter(&alcance_bomba),
                                     x,
                                     pos_y_aux,
@@ -110,80 +112,10 @@ impl Laberinto {
         }
     }
 
-    /*fn evaluar_objeto(casilla: &&str, y:usize, x:i32) -> Result<(), String>{
-        match casilla.chars().next() {
-            Some(tipo_objeto) => match tipo_objeto {
-                'F' => {
-                    if let Some(vida_enemigo) = casilla.chars().nth(1) {
-                        let pos_y_aux = y as i32;
-                        let nuevo_enemigo = Enemigo::new(
-                            Self::convertir_caracter(&vida_enemigo),
-                            x,
-                            pos_y_aux,
-                        );
-                        enemigos_aux.push(nuevo_enemigo);
-                    }
-                }
-                'B' => {
-                    if let Some(alcance_bomba) = casilla.chars().nth(1) {
-                        let pos_y_aux = y as i32;
-                        let nueva_bomba = Bomba::new(
-                            "Normal".to_string(),
-                            Self::convertir_caracter(&alcance_bomba),
-                            x,
-                            pos_y_aux,
-                        );
-                        bombas_aux.push(nueva_bomba);
-                    }
-                }
-                'S' => {
-                    if let Some(alcance_bomba) = casilla.chars().nth(1) {
-                        let pos_y_aux = y as i32;
-                        let nueva_bomba = Bomba::new(
-                            "Traspaso".to_string(),
-                            Self::convertir_caracter(&alcance_bomba),
-                            x,
-                            pos_y_aux,
-                        );
-                        bombas_aux.push(nueva_bomba);
-                    }
-                }
-                'R' => {
-                    let pos_y_aux = y as i32;
-                    let nuevo_obstaculo = Obstaculo::new("Roca".to_string(), x, pos_y_aux);
-                    obstaculos_aux.push(nuevo_obstaculo);
-                }
-                'W' => {
-                    let pos_y_aux = y as i32;
-                    let nuevo_obstaculo = Obstaculo::new("Pared".to_string(), x, pos_y_aux);
-                    obstaculos_aux.push(nuevo_obstaculo);
-                }
-                'D' => {
-                    if let Some(direc_desvio) = casilla.chars().nth(1) {
-                        let pos_y_aux = y as i32;
-
-                        let direc_aux = match direc_desvio {
-                            'U' => "Arriba",
-                            'D' => "Abajo",
-                            'L' => "Izquierda",
-                            'R' => "Derecha",
-                            _ => "",
-                        };
-
-                        let nuevo_desvio = Desvio::new(direc_aux.to_string(), x, pos_y_aux);
-                        desvios_aux.push(nuevo_desvio);
-                    }
-                }
-                _ => {}
-            },
-            None => {}
-        }
-    }*/
-
     pub fn detonar_bomba(&mut self, coordenadas_bomba: (i32, i32)) {
         let mut desvios_ignorados: Vec<Desvio> = Vec::new();
         let mut desvios_aux: Vec<Desvio> = Vec::new();
-        let mut bomba_detonada: Bomba = Bomba::new("Normal".to_string(), 0, 0, 0);
+        let mut bomba_detonada: Bomba = Bomba::new(TipoBomba::Normal, 0, 0, 0);
 
         self.bombas = ordenar_bombas(&coordenadas_bomba, &mut self.bombas);
 
@@ -286,8 +218,8 @@ pub fn daniar_enemigos(enemigos: &mut Vec<Enemigo>, casillas_afectadas: &Vec<(i3
     }
 }
 
-pub fn bloquea(tipo_bomba: String, tipo_obstaculo: String) -> bool {
-    if tipo_obstaculo == "Pared" || tipo_bomba == "Normal" {
+pub fn bloquea(tipo_bomba: TipoBomba, tipo_obstaculo: String) -> bool {
+    if tipo_obstaculo == "Pared" || tipo_bomba == TipoBomba::Normal {
         return true;
     }
 
@@ -297,7 +229,7 @@ pub fn bloquea(tipo_bomba: String, tipo_obstaculo: String) -> bool {
 pub fn anular_casillas(
     obstaculo: (i32, i32, char),
     casillas_afectadas: &Vec<(i32, i32, char)>,
-    tipo_bomba: &String,
+    tipo_bomba: &TipoBomba,
     tipo_obstaculo: &String,
 ) -> Vec<(i32, i32, char)> {
     let mut casillas_anuladas: Vec<(i32, i32, char)> = Vec::new();
@@ -309,7 +241,7 @@ pub fn anular_casillas(
             for c in casillas_afectadas {
                 if c.0 > obstaculo.0
                     && c.1 == obstaculo.1
-                    && bloquea(tipo_bomba.to_string(), tipo_obstaculo.to_string())
+                    && bloquea(tipo_bomba.clone(), tipo_obstaculo.to_string())
                 {
                     casillas_anuladas.push(*c);
                 }
@@ -320,7 +252,7 @@ pub fn anular_casillas(
             for c in casillas_afectadas {
                 if c.0 < obstaculo.0
                     && c.1 == obstaculo.1
-                    && bloquea(tipo_bomba.to_string(), tipo_obstaculo.to_string())
+                    && bloquea(tipo_bomba.clone(), tipo_obstaculo.to_string())
                 {
                     casillas_anuladas.push(*c);
                 }
@@ -331,7 +263,7 @@ pub fn anular_casillas(
             for c in casillas_afectadas {
                 if c.1 < obstaculo.1
                     && c.0 == obstaculo.0
-                    && bloquea(tipo_bomba.to_string(), tipo_obstaculo.to_string())
+                    && bloquea(tipo_bomba.clone(), tipo_obstaculo.to_string())
                 {
                     casillas_anuladas.push(*c);
                 }
@@ -342,7 +274,7 @@ pub fn anular_casillas(
             for c in casillas_afectadas {
                 if c.1 > obstaculo.1
                     && c.0 == obstaculo.0
-                    && bloquea(tipo_bomba.to_string(), tipo_obstaculo.to_string())
+                    && bloquea(tipo_bomba.clone(), tipo_obstaculo.to_string())
                 {
                     casillas_anuladas.push(*c);
                 }
@@ -358,7 +290,7 @@ pub fn anular_casillas(
 pub fn controlar_obstaculos(
     obstaculos: &Vec<Obstaculo>,
     casillas_afectadas: &Vec<(i32, i32, char)>,
-    tipo_bomba: &String,
+    tipo_bomba: &TipoBomba,
 ) -> Vec<(i32, i32, char)> {
     let mut casillas_finales = Vec::new();
     let mut casillas_anuladas: Vec<(i32, i32, char)> = Vec::new();

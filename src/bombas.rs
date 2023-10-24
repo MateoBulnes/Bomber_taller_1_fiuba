@@ -1,15 +1,21 @@
 #[derive(Clone, PartialEq, Debug)]
 
 pub struct Bomba {
-    pub tipo: String,
+    pub tipo: TipoBomba,
     pub alcance: i32,
     pub posicion_x: i32,
     pub posicion_y: i32,
     pub detonada: bool,
 }
 
+#[derive(Clone, PartialEq, Debug)]
+pub enum TipoBomba {
+    Normal,
+    Traspaso,
+}
+
 impl Bomba {
-    pub fn new(tipo_bomba: String, alcance_bomba: i32, pos_x: i32, pos_y: i32) -> Self {
+    pub fn new(tipo_bomba: TipoBomba, alcance_bomba: i32, pos_x: i32, pos_y: i32) -> Self {
         Self {
             tipo: tipo_bomba,
             alcance: alcance_bomba,

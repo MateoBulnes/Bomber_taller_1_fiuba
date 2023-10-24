@@ -34,7 +34,7 @@ impl Laberinto {
                     &mut bombas_aux,
                     (x, y as i32),
                 );
-                
+
                 x += 1;
             }
             x = 0;

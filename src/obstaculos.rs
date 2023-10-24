@@ -9,7 +9,7 @@ pub struct Obstaculo {
 #[derive(Clone, PartialEq, Debug)]
 pub enum TipoObstaculo {
     Pared,
-    Roca
+    Roca,
 }
 
 impl Obstaculo {

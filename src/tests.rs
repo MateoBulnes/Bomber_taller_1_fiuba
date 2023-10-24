@@ -1,5 +1,5 @@
 use crate::{
-    bombas::Bomba, bombas::TipoBomba, desvios::Desvio, enemigos::Enemigo,
+    bombas::Bomba, bombas::TipoBomba, desvios::Desvio, desvios::DireccionDesvio, enemigos::Enemigo,
     laberinto::daniar_enemigos, obstaculos::Obstaculo, obstaculos::TipoObstaculo, Laberinto,
 };
 
@@ -38,7 +38,7 @@ fn crear_laberinto_con_desvio() {
     ];
     let lab = Laberinto::new(&tablero);
 
-    let desvio = Desvio::new("Abajo".to_string(), 1, 1);
+    let desvio = Desvio::new(DireccionDesvio::Abajo, 1, 1);
     assert_eq!(lab.desvios, [desvio]);
 }
 

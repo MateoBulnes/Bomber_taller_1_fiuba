@@ -4,6 +4,7 @@ use crate::enemigos::Enemigo;
 use crate::obstaculos::Obstaculo;
 
 use crate::bombas::TipoBomba;
+use crate::desvios::DireccionDesvio;
 use crate::obstaculos::TipoObstaculo;
 
 pub struct Laberinto {
@@ -78,14 +79,14 @@ impl Laberinto {
                                 let pos_y_aux = y as i32;
 
                                 let direc_aux = match direc_desvio {
-                                    'U' => "Arriba",
-                                    'D' => "Abajo",
-                                    'L' => "Izquierda",
-                                    'R' => "Derecha",
-                                    _ => "",
+                                    'U' => DireccionDesvio::Arriba,
+                                    'D' => DireccionDesvio::Abajo,
+                                    'L' => DireccionDesvio::Izquierda,
+                                    'R' => DireccionDesvio::Derecha,
+                                    _ => DireccionDesvio::Invalida,
                                 };
 
-                                let nuevo_desvio = Desvio::new(direc_aux.to_string(), x, pos_y_aux);
+                                let nuevo_desvio = Desvio::new(direc_aux, x, pos_y_aux);
                                 desvios_aux.push(nuevo_desvio);
                             }
                         }

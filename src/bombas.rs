@@ -24,7 +24,7 @@ impl Bomba {
             detonada: false,
         }
     }
-    
+
     pub fn detonar(&mut self, dimension: i32) -> Vec<(i32, i32, char)> {
         let mut casillas_afectadas = Vec::new();
         let mut alcance_aux = self.alcance;
@@ -57,5 +57,3 @@ impl Bomba {
         casillas_afectadas
     }
 }
-
-

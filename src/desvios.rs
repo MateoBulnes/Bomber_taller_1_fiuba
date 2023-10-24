@@ -1,13 +1,22 @@
 #[derive(Clone, Debug, PartialEq)]
 
 pub struct Desvio {
-    pub direccion: String,
+    pub direccion: DireccionDesvio,
     pub posicion_x: i32,
     pub posicion_y: i32,
 }
 
+#[derive(Clone, PartialEq, Debug)]
+pub enum DireccionDesvio {
+    Derecha,
+    Izquierda,
+    Arriba,
+    Abajo,
+    Invalida,
+}
+
 impl Desvio {
-    pub fn new(direc_desvio: String, pos_x: i32, pos_y: i32) -> Self {
+    pub fn new(direc_desvio: DireccionDesvio, pos_x: i32, pos_y: i32) -> Self {
         Self {
             direccion: direc_desvio,
             posicion_x: pos_x,
@@ -80,8 +89,8 @@ impl Desvio {
         let mut cas_desviadas: Vec<(i32, i32, char)> = Vec::new();
         let direc_desvio = &self.direccion;
 
-        match direc_desvio as &str {
-            "Derecha" => {
+        match direc_desvio {
+            DireccionDesvio::Derecha => {
                 for i in self.posicion_x + 1..*dim + 1 {
                     if *cant_a_recorrer > 0 {
                         cas_desviadas.push((i, self.posicion_y, 'R'));
@@ -90,7 +99,7 @@ impl Desvio {
                 }
             }
 
-            "Izquierda" => {
+            DireccionDesvio::Izquierda => {
                 for i in 1..self.posicion_x + 1 {
                     if *cant_a_recorrer > 0 {
                         cas_desviadas.push((self.posicion_x - i, self.posicion_y, 'L'));
@@ -99,7 +108,7 @@ impl Desvio {
                 }
             }
 
-            "Arriba" => {
+            DireccionDesvio::Arriba => {
                 for i in 1..self.posicion_y + 1 {
                     if *cant_a_recorrer > 0 {
                         cas_desviadas.push((self.posicion_x, self.posicion_y - i, 'U'));
@@ -108,7 +117,7 @@ impl Desvio {
                 }
             }
 
-            "Abajo" => {
+            DireccionDesvio::Abajo => {
                 for i in self.posicion_y + 1..*dim + 1 {
                     if *cant_a_recorrer > 0 {
                         cas_desviadas.push((self.posicion_x, i, 'D'));
@@ -156,18 +165,12 @@ impl Desvio {
     }
 
     pub fn get_direccion_simple(&self) -> char {
-        match &self.direccion as &str {
-            "Derecha" => 'R',
-
-            "Izquierda" => 'L',
-
-            "Arriba" => 'U',
-
-            "Abajo" => 'D',
-
+        match &self.direccion {
+            DireccionDesvio::Derecha => 'R',
+            DireccionDesvio::Izquierda => 'L',
+            DireccionDesvio::Arriba => 'U',
+            DireccionDesvio::Abajo => 'D',
             _ => 'X',
         }
     }
 }
-
-
